@@ -25,6 +25,7 @@
       --yellow:   #ffd60a;
       --text:     #ffffff;
       --subtext:  #ebebf5cc;
+      --purple:   #bf5af2;
       --radius:   14px;
     }
 
@@ -91,9 +92,11 @@
     }
     #board { width: 85vw !important; max-width: 350px !important; }
 
-    #board .sq-sel     { background: rgba(255,214,10,0.7)  !important; }
-    #board .sq-move    { background: rgba(48,209,88,0.55)  !important; }
-    #board .sq-capture { background: rgba(255,69,58,0.6)   !important; }
+    #board .sq-sel       { background: rgba(255,214,10,0.7)   !important; }
+    #board .sq-move      { background: rgba(48,209,88,0.55)   !important; }
+    #board .sq-capture   { background: rgba(255,69,58,0.6)    !important; }
+    #board .sq-hint-from { background: rgba(191,90,242,0.75)  !important; }
+    #board .sq-hint-to   { background: rgba(191,90,242,0.45)  !important; }
     #board .square-55d63 { transition: background 0.08s; }
 
     /* ── Coaching detail row ── */
@@ -162,8 +165,11 @@
       transition: opacity 0.15s, transform 0.1s;
     }
     button:active { transform: scale(0.96); opacity: 0.82; }
+    #btn-hint     { background: var(--purple);   color: #fff; }
     #btn-takeback { background: var(--surface2); color: var(--text); }
     #btn-new      { background: var(--accent);   color: #fff; }
+    /* tighten text on smaller buttons when three share a row */
+    .btn-row button { font-size: 14px; }
   </style>
 </head>
 <body>
@@ -214,7 +220,8 @@
 </div>
 
 <div class="btn-row">
-  <button id="btn-takeback" onclick="undoLastMove()">&#8630; Take Back</button>
+  <button id="btn-hint"     onclick="showHint()">💡 Hint</button>
+  <button id="btn-takeback" onclick="undoLastMove()">&#8630; Back</button>
   <button id="btn-new"      onclick="newGame()">New Game</button>
 </div>
 
@@ -293,9 +300,11 @@ let cpuThinking = false;
 
 // Pre-move coaching data (populated by analyzePosition before each white move)
 let coachData = {
-  moveScores: new Map(), // "from+to" → score from white's perspective
-  topScore:   0,
-  topSAN:     '—'
+  moveScores: new Map(), // "from+to" → { score, san }
+  topScore:   -Infinity,
+  topSAN:     '—',
+  topFrom:    null,
+  topTo:      null
 };
 
 // ─────────────────────────────────────────────
@@ -358,6 +367,8 @@ function analyzePosition() {
   coachData.moveScores.clear();
   coachData.topScore = -Infinity;
   coachData.topSAN   = '—';
+  coachData.topFrom  = null;
+  coachData.topTo    = null;
 
   if (game.game_over() || game.turn() !== 'w') return;
 
@@ -376,6 +387,8 @@ function analyzePosition() {
     if (score > coachData.topScore) {
       coachData.topScore = score;
       coachData.topSAN   = m.san;
+      coachData.topFrom  = m.from;
+      coachData.topTo    = m.to;
     }
     if (score > alpha) alpha = score;
   }
@@ -521,7 +534,24 @@ function doCpuMove() {
 //  Square highlights
 // ─────────────────────────────────────────────
 function clearHL() {
-  $('#board .square-55d63').removeClass('sq-sel sq-move sq-capture');
+  $('#board .square-55d63').removeClass('sq-sel sq-move sq-capture sq-hint-from sq-hint-to');
+}
+
+function showHint() {
+  if (cpuThinking || game.game_over() || game.turn() !== 'w') return;
+  if (!coachData.topFrom) {
+    setFeedback('💡 Calculating best move… try again in a moment.', 'neutral');
+    return;
+  }
+  clearHL();
+  $(`#board [data-square="${coachData.topFrom}"]`).addClass('sq-hint-from');
+  $(`#board [data-square="${coachData.topTo}"]`).addClass('sq-hint-to');
+  setFeedback(`💡 Hint: Try ${coachData.topSAN} — tap the purple square to move it.`, 'neutral');
+
+  // Auto-clear highlight after 4 seconds
+  setTimeout(() => {
+    $('#board .square-55d63').removeClass('sq-hint-from sq-hint-to');
+  }, 4000);
 }
 function highlightFrom(sq) {
   selSq    = sq;
