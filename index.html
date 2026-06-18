@@ -23,33 +23,39 @@
       --red:      #ff453a;
       --orange:   #ff9f0a;
       --yellow:   #ffd60a;
+      --purple:   #bf5af2;
       --text:     #ffffff;
       --subtext:  #ebebf5cc;
-      --purple:   #bf5af2;
-      --radius:   14px;
+      --radius:   12px;
     }
 
+    /* Lock page to viewport — no scroll */
     html, body {
-      background: var(--bg);
-      color: var(--text);
+      height: 100%; overflow: hidden;
+      background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
                    "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       overscroll-behavior: none;
+      touch-action: none;      /* prevents pull-to-refresh / pan on outer container */
     }
+
     body {
       display: flex; flex-direction: column; align-items: center;
-      padding: 16px 12px 40px; min-height: 100dvh; gap: 12px;
+      justify-content: space-evenly;   /* distribute remaining space evenly */
+      padding: 8px 12px env(safe-area-inset-bottom, 8px);
+      height: 100dvh;                  /* uses actual visible viewport height */
     }
 
     /* ── Header ── */
     header {
       width: 100%; max-width: 390px;
       display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
     }
-    .app-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .app-title { font-size: 19px; font-weight: 700; letter-spacing: -0.4px; }
     .turn-pill {
-      font-size: 13px; font-weight: 600; padding: 5px 12px;
+      font-size: 12px; font-weight: 600; padding: 4px 11px;
       border-radius: 20px; background: var(--surface2); color: var(--subtext);
       transition: background 0.25s, color 0.25s;
     }
@@ -58,23 +64,24 @@
 
     /* ── Feedback banner ── */
     #tutor-feedback {
-      width: 100%; max-width: 390px; min-height: 64px;
+      width: 100%; max-width: 390px;
+      min-height: 46px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      padding: 10px 16px; border-radius: var(--radius);
-      background: var(--surface); font-size: 14px; font-weight: 600;
-      line-height: 1.4; text-align: center;
+      padding: 8px 14px; border-radius: var(--radius);
+      background: var(--surface);
+      font-size: 13px; font-weight: 600; line-height: 1.35; text-align: center;
       border: 1.5px solid var(--surface2);
       transition: background 0.25s, color 0.25s, border-color 0.25s;
     }
-    #tutor-feedback.state-neutral { color: var(--subtext); }
-    #tutor-feedback.state-best    { color: var(--green);   border-color: rgba(48,209,88,0.45);  background: rgba(48,209,88,0.1); }
-    #tutor-feedback.state-good    { color: var(--green);   border-color: rgba(48,209,88,0.3);   background: rgba(48,209,88,0.07); }
-    #tutor-feedback.state-inaccuracy { color: var(--orange); border-color: rgba(255,159,10,0.45); background: rgba(255,159,10,0.09); }
-    #tutor-feedback.state-mistake { color: var(--orange);  border-color: rgba(255,159,10,0.5);  background: rgba(255,159,10,0.12); animation: shake 0.4s ease; }
-    #tutor-feedback.state-blunder { color: var(--red);     border-color: rgba(255,69,58,0.55);  background: rgba(255,69,58,0.12); animation: shake 0.45s ease; }
-    #tutor-feedback.state-check   { color: var(--yellow);  border-color: rgba(255,214,10,0.5);  background: rgba(255,214,10,0.08); }
-    #tutor-feedback.state-cpu     { color: var(--subtext); }
-    #tutor-feedback.state-end     { color: var(--accent);  border-color: rgba(10,132,255,0.4);  background: rgba(10,132,255,0.1); }
+    #tutor-feedback.state-neutral    { color: var(--subtext); }
+    #tutor-feedback.state-best       { color: var(--green);   border-color: rgba(48,209,88,0.45);  background: rgba(48,209,88,0.1); }
+    #tutor-feedback.state-good       { color: var(--green);   border-color: rgba(48,209,88,0.3);   background: rgba(48,209,88,0.07); }
+    #tutor-feedback.state-inaccuracy { color: var(--orange);  border-color: rgba(255,159,10,0.45); background: rgba(255,159,10,0.09); }
+    #tutor-feedback.state-mistake    { color: var(--orange);  border-color: rgba(255,159,10,0.5);  background: rgba(255,159,10,0.12); animation: shake 0.4s ease; }
+    #tutor-feedback.state-blunder    { color: var(--red);     border-color: rgba(255,69,58,0.55);  background: rgba(255,69,58,0.12); animation: shake 0.45s ease; }
+    #tutor-feedback.state-check      { color: var(--yellow);  border-color: rgba(255,214,10,0.5);  background: rgba(255,214,10,0.08); }
+    #tutor-feedback.state-cpu        { color: var(--subtext); }
+    #tutor-feedback.state-end        { color: var(--accent);  border-color: rgba(10,132,255,0.4);  background: rgba(10,132,255,0.1); }
 
     @keyframes shake {
       0%,100%{ transform:translateX(0); }
@@ -86,90 +93,83 @@
 
     /* ── Board ── */
     #board-wrapper {
+      flex-shrink: 0;
       border-radius: var(--radius);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      box-shadow: 0 6px 28px rgba(0,0,0,0.65);
       line-height: 0;
+      /* touch-action none stops board touches from scrolling the page */
+      touch-action: none;
     }
-    #board { width: 85vw !important; max-width: 350px !important; }
+    /* Width drives the square size chessboard.js calculates — no height constraint */
+    #board { width: min(78vw, 320px) !important; }
 
-    #board .sq-sel       { background: rgba(255,214,10,0.7)   !important; }
-    #board .sq-move      { background: rgba(48,209,88,0.55)   !important; }
-    #board .sq-capture   { background: rgba(255,69,58,0.6)    !important; }
-    #board .sq-hint-from { background: rgba(191,90,242,0.75)  !important; }
-    #board .sq-hint-to   { background: rgba(191,90,242,0.45)  !important; }
+    /* Square interaction highlights */
+    #board .sq-sel       { background: rgba(255,214,10,0.7)  !important; }
+    #board .sq-move      { background: rgba(48,209,88,0.55)  !important; }
+    #board .sq-capture   { background: rgba(255,69,58,0.6)   !important; }
+    #board .sq-hint-from { background: rgba(191,90,242,0.75) !important; }
+    #board .sq-hint-to   { background: rgba(191,90,242,0.45) !important; }
     #board .square-55d63 { transition: background 0.08s; }
+    /* Prevent chessboard piece images from triggering drag/scroll */
+    #board img           { pointer-events: none; user-select: none; -webkit-user-drag: none; }
 
-    /* ── Coaching detail row ── */
+    /* ── Coaching summary row ── */
     #coaching-row {
       width: 100%; max-width: 390px;
-      display: flex; gap: 8px;
+      display: flex; gap: 6px; flex-shrink: 0;
     }
     .coach-card {
-      flex: 1; background: var(--surface);
-      border-radius: 10px; padding: 8px 10px;
-      border: 1px solid var(--surface2);
-      text-align: center; min-height: 46px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 2px;
+      flex: 1; background: var(--surface); border-radius: 9px;
+      padding: 5px 6px; border: 1px solid var(--surface2);
+      text-align: center; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1px;
     }
     .coach-label {
-      font-size: 9px; font-weight: 700; letter-spacing: 0.7px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
       text-transform: uppercase; color: var(--subtext);
     }
-    .coach-value { font-size: 15px; font-weight: 700; color: var(--text); }
+    .coach-value       { font-size: 13px; font-weight: 700; color: var(--text); }
     .coach-value.green  { color: var(--green); }
     .coach-value.orange { color: var(--orange); }
     .coach-value.red    { color: var(--red); }
 
-    /* ── Captured ── */
-    #captured-wrap { width: 100%; max-width: 390px; display: flex; gap: 8px; }
-    .captured-side {
-      flex: 1; background: var(--surface);
-      border-radius: 10px; padding: 6px 10px;
-      border: 1px solid var(--surface2);
-    }
-    .cap-label {
-      font-size: 10px; font-weight: 700; letter-spacing: 0.7px;
-      text-transform: uppercase; color: var(--subtext); margin-bottom: 2px;
-    }
-    .cap-pieces { font-size: 17px; line-height: 1.3; min-height: 22px; }
-
-    /* ── Move log ── */
+    /* ── Move log (single compact scrollable line) ── */
     #move-log-wrap {
-      width: 100%; max-width: 390px; background: var(--surface);
-      border-radius: var(--radius); padding: 10px 14px;
-      border: 1px solid var(--surface2);
+      width: 100%; max-width: 390px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
     }
-    .log-header {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
-      text-transform: uppercase; color: var(--subtext); margin-bottom: 6px;
+    .log-tag {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--subtext); white-space: nowrap;
     }
     #move-log {
-      display: flex; flex-wrap: wrap; gap: 3px 6px;
-      max-height: 52px; overflow-y: auto;
-      font-size: 13px; font-variant-numeric: tabular-nums;
+      flex: 1; display: flex; flex-wrap: nowrap; gap: 4px;
+      overflow-x: auto; overflow-y: hidden; height: 22px;
+      align-items: center;
+      font-size: 12px; font-variant-numeric: tabular-nums;
+      scrollbar-width: none;
     }
-    #move-log::-webkit-scrollbar { width: 3px; }
-    #move-log::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
-    .log-pair { display: flex; gap: 3px; align-items: baseline; }
-    .log-num  { color: var(--subtext); font-size: 11px; }
-    .log-w    { color: var(--text); }
-    .log-b    { color: #b58863; }
+    #move-log::-webkit-scrollbar { display: none; }
+    .log-pair  { display: flex; gap: 2px; align-items: baseline; white-space: nowrap; }
+    .log-num   { color: var(--subtext); font-size: 10px; }
+    .log-w     { color: var(--text); }
+    .log-b     { color: #b58863; }
 
     /* ── Buttons ── */
-    .btn-row { width: 100%; max-width: 390px; display: flex; gap: 10px; }
+    .btn-row {
+      width: 100%; max-width: 390px;
+      display: flex; gap: 8px; flex-shrink: 0;
+    }
     button {
-      flex: 1; height: 52px; border: none; border-radius: var(--radius);
-      font-size: 16px; font-weight: 700; cursor: pointer;
+      flex: 1; height: 46px; border: none; border-radius: var(--radius);
+      font-size: 13px; font-weight: 700; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: opacity 0.15s, transform 0.1s;
     }
-    button:active { transform: scale(0.96); opacity: 0.82; }
+    button:active { transform: scale(0.95); opacity: 0.8; }
     #btn-hint     { background: var(--purple);   color: #fff; }
     #btn-takeback { background: var(--surface2); color: var(--text); }
     #btn-new      { background: var(--accent);   color: #fff; }
-    /* tighten text on smaller buttons when three share a row */
-    .btn-row button { font-size: 14px; }
   </style>
 </head>
 <body>
@@ -187,14 +187,13 @@
   <div id="board"></div>
 </div>
 
-<!-- Coaching summary cards shown after each white move -->
 <div id="coaching-row">
   <div class="coach-card">
     <span class="coach-label">Your Move</span>
     <span class="coach-value" id="c-move">—</span>
   </div>
   <div class="coach-card">
-    <span class="coach-label">Classification</span>
+    <span class="coach-label">Grade</span>
     <span class="coach-value" id="c-class">—</span>
   </div>
   <div class="coach-card">
@@ -203,19 +202,8 @@
   </div>
 </div>
 
-<div id="captured-wrap">
-  <div class="captured-side">
-    <div class="cap-label">You captured</div>
-    <div class="cap-pieces" id="cap-white"></div>
-  </div>
-  <div class="captured-side">
-    <div class="cap-label">CPU captured</div>
-    <div class="cap-pieces" id="cap-black"></div>
-  </div>
-</div>
-
 <div id="move-log-wrap">
-  <div class="log-header">Move History</div>
+  <span class="log-tag">Moves</span>
   <div id="move-log"></div>
 </div>
 
@@ -232,7 +220,6 @@
 const PIECE_SCORES = { p:100, n:320, b:330, r:500, q:900, k:20000 };
 const CPU_DEPTH    = 2;
 
-// Piece-square tables — rank 8 first, files a→h, positive = good for that colour.
 const PST = {
   p:[  0,  0,  0,  0,  0,  0,  0,  0,
       50, 50, 50, 50, 50, 50, 50, 50,
@@ -298,9 +285,8 @@ let selSq       = null;
 let legalDst    = [];
 let cpuThinking = false;
 
-// Pre-move coaching data (populated by analyzePosition before each white move)
 let coachData = {
-  moveScores: new Map(), // "from+to" → { score, san }
+  moveScores: new Map(),
   topScore:   -Infinity,
   topSAN:     '—',
   topFrom:    null,
@@ -320,9 +306,7 @@ function evaluate() {
       const pc = b[r][f];
       if (!pc) continue;
       const isW = pc.color === 'w';
-      // White: PST row 0 = rank 8 → index r*8+f
-      // Black: mirror vertically → (7-r)*8+f
-      const pi  = (PST[pc.type] || [])[isW ? r * 8 + f : (7 - r) * 8 + f] || 0;
+      const pi  = (PST[pc.type] || [])[isW ? r*8+f : (7-r)*8+f] || 0;
       score    += isW ? PIECE_SCORES[pc.type] + pi : -(PIECE_SCORES[pc.type] + pi);
     }
   }
@@ -331,21 +315,16 @@ function evaluate() {
 
 function sortMoves(moves) {
   return moves.sort((a, b) => {
-    const av = a.captured ? PIECE_SCORES[a.captured] * 10 - PIECE_SCORES[a.piece] : 0;
-    const bv = b.captured ? PIECE_SCORES[b.captured] * 10 - PIECE_SCORES[b.piece] : 0;
+    const av = a.captured ? PIECE_SCORES[a.captured]*10 - PIECE_SCORES[a.piece] : 0;
+    const bv = b.captured ? PIECE_SCORES[b.captured]*10 - PIECE_SCORES[b.piece] : 0;
     return bv - av;
   });
 }
 
-// Negamax with alpha-beta. Returns score from CURRENT player's perspective.
 function negamax(depth, alpha, beta) {
-  if (depth === 0) {
-    const raw = evaluate();
-    return game.turn() === 'w' ? raw : -raw;
-  }
+  if (depth === 0) { const r = evaluate(); return game.turn() === 'w' ? r : -r; }
   const moves = sortMoves(game.moves({ verbose: true }));
   if (!moves.length) return game.in_check() ? -99999 : 0;
-
   let best = -Infinity;
   for (const m of moves) {
     game.move(m);
@@ -360,8 +339,6 @@ function negamax(depth, alpha, beta) {
 
 // ─────────────────────────────────────────────
 //  Pre-move coaching analysis
-//  Scores every legal white move BEFORE the player touches a piece.
-//  Called once after CPU plays (and at game start / after undo).
 // ─────────────────────────────────────────────
 function analyzePosition() {
   coachData.moveScores.clear();
@@ -375,14 +352,11 @@ function analyzePosition() {
   const moves = sortMoves(
     game.moves({ verbose: true }).filter(m => !m.promotion || m.promotion === 'q')
   );
-
   let alpha = -Infinity;
   for (const m of moves) {
     game.move(m);
-    // Score after white's move: negate negamax (which runs for black now)
     const score = -negamax(CPU_DEPTH - 1, -Infinity, -alpha);
     game.undo();
-
     coachData.moveScores.set(m.from + m.to, { score, san: m.san });
     if (score > coachData.topScore) {
       coachData.topScore = score;
@@ -398,33 +372,64 @@ function analyzePosition() {
 //  Move classification
 // ─────────────────────────────────────────────
 function classify(cpLoss) {
-  if (cpLoss <= 20)  return { label: '✅ Best!',       cls: 'best',       state: 'best'       };
-  if (cpLoss <= 60)  return { label: '✅ Good',        cls: 'good',       state: 'good'       };
-  if (cpLoss <= 150) return { label: '⚠️ Inaccuracy',  cls: 'orange',     state: 'inaccuracy' };
-  if (cpLoss <= 350) return { label: '⚠️ Mistake',     cls: 'orange',     state: 'mistake'    };
-  return               { label: '❌ Blunder!',      cls: 'red',        state: 'blunder'    };
+  if (cpLoss <= 20)  return { label:'✅ Best!',      cls:'green',  state:'best'        };
+  if (cpLoss <= 60)  return { label:'✅ Good',        cls:'green',  state:'good'        };
+  if (cpLoss <= 150) return { label:'⚠️ Inaccuracy', cls:'orange', state:'inaccuracy'  };
+  if (cpLoss <= 350) return { label:'⚠️ Mistake',    cls:'orange', state:'mistake'     };
+  return               { label:'❌ Blunder!',    cls:'red',    state:'blunder'     };
 }
 
-function coachMessage(cpLoss, bestSAN, playedSAN, inCheck) {
-  if (inCheck && cpLoss <= 60) return `⚡ Check! Great move — you put the king under attack.`;
+function coachMessage(cpLoss, bestSAN, inCheck) {
+  if (inCheck && cpLoss <= 60) return `⚡ Check! Great move — king under attack.`;
   if (inCheck)                 return `⚡ Check! But ${bestSAN} was even stronger.`;
-
-  if (cpLoss <= 20) return `✅ Best move! That's the engine's top pick — well done.`;
-  if (cpLoss <= 60) return `✅ Good move! Solid choice. Engine also liked ${bestSAN}.`;
-  if (cpLoss <= 150) return `⚠️ Slight inaccuracy. ${bestSAN} would have been a bit better.`;
-  if (cpLoss <= 350) return `⚠️ Mistake! ${bestSAN} was the stronger option here.`;
-  return `❌ Blunder! You had ${bestSAN} available — hit Take Back and try again!`;
+  if (cpLoss <= 20)  return `✅ Best move! That's the engine's top pick.`;
+  if (cpLoss <= 60)  return `✅ Good move! Engine also liked ${bestSAN}.`;
+  if (cpLoss <= 150) return `⚠️ Inaccuracy. ${bestSAN} would be better here.`;
+  if (cpLoss <= 350) return `⚠️ Mistake! ${bestSAN} was the stronger option.`;
+  return `❌ Blunder! You had ${bestSAN} — tap Back and try again!`;
 }
 
 // ─────────────────────────────────────────────
-//  Player move execution
+//  Highlights
+// ─────────────────────────────────────────────
+function clearHL() {
+  $('#board .square-55d63').removeClass('sq-sel sq-move sq-capture sq-hint-from sq-hint-to');
+}
+
+function highlightFrom(sq) {
+  selSq    = sq;
+  legalDst = game.moves({ square: sq, verbose: true });
+  clearHL();
+  $(`#board [data-square="${sq}"]`).addClass('sq-sel');
+  legalDst.forEach(m =>
+    $(`#board [data-square="${m.to}"]`).addClass(game.get(m.to) ? 'sq-capture' : 'sq-move')
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Hint button
+// ─────────────────────────────────────────────
+function showHint() {
+  if (cpuThinking || game.game_over() || game.turn() !== 'w') return;
+  if (!coachData.topFrom) {
+    setFeedback('💡 Calculating… tap Hint again in a moment.', 'neutral');
+    return;
+  }
+  clearHL();
+  $(`#board [data-square="${coachData.topFrom}"]`).addClass('sq-hint-from');
+  $(`#board [data-square="${coachData.topTo}"]`).addClass('sq-hint-to');
+  setFeedback(`💡 Hint: Try ${coachData.topSAN} — tap the purple square.`, 'neutral');
+  setTimeout(() => $('#board .square-55d63').removeClass('sq-hint-from sq-hint-to'), 4000);
+}
+
+// ─────────────────────────────────────────────
+//  Player move
 // ─────────────────────────────────────────────
 function executeMove(from, to) {
   if (cpuThinking || game.game_over() || game.turn() !== 'w') return false;
 
-  // Look up this move's pre-computed score BEFORE making it
-  const entry    = coachData.moveScores.get(from + to);
-  const cpLoss   = entry ? Math.max(0, coachData.topScore - entry.score) : null;
+  const entry  = coachData.moveScores.get(from + to);
+  const cpLoss = entry ? Math.max(0, coachData.topScore - entry.score) : null;
 
   const move = game.move({ from, to, promotion: 'q' });
   if (!move) return false;
@@ -433,39 +438,26 @@ function executeMove(from, to) {
   board.position(game.fen());
   refreshUI();
 
-  // Game-over shortcuts
   if (game.in_checkmate()) {
-    setFeedback('🏆 Checkmate! You win! Start a new game.', 'end');
-    updateCoachCards(move.san, '✅ Best!', 'best', coachData.topSAN, '—');
+    setFeedback('🏆 Checkmate! You win!', 'end');
+    updateCoachCards(move.san, '✅ Best!', 'green', coachData.topSAN);
     return true;
   }
-  if (game.in_draw()) {
-    setFeedback('🤝 Draw! Start a new game.', 'end');
-    return true;
-  }
+  if (game.in_draw()) { setFeedback('🤝 Draw!', 'end'); return true; }
 
-  // Coaching
-  const inCheck  = game.in_check();
-  let   msgState = 'good';
-  let   delay    = 500;
+  const inCheck = game.in_check();
+  let delay     = 500;
 
   if (cpLoss !== null) {
     const c = classify(cpLoss);
-    msgState = c.state;
-    const msg = coachMessage(cpLoss, coachData.topSAN, move.san, inCheck);
-    setFeedback(msg, c.state);
-    updateCoachCards(move.san, c.label, c.cls, coachData.topSAN, cpLoss);
+    setFeedback(coachMessage(cpLoss, coachData.topSAN, inCheck), c.state);
+    updateCoachCards(move.san, c.label, c.cls, coachData.topSAN);
     if (c.state === 'blunder') delay = 1400;
-    else if (c.state === 'mistake') delay = 1000;
+    else if (c.state === 'mistake') delay = 900;
   } else {
-    // Fallback if analysis wasn't ready
-    if (inCheck) {
-      setFeedback('⚡ Check! You put the king under attack!', 'check');
-      msgState = 'check';
-    } else {
-      setFeedback('✅ Move played. Computer is thinking…', 'good');
-    }
-    updateCoachCards(move.san, '—', '', '—', '—');
+    setFeedback(inCheck ? '⚡ Check!' : '✅ Move played. Computer thinking…',
+                inCheck ? 'check' : 'good');
+    updateCoachCards(move.san, '—', '', '—');
   }
 
   cpuThinking = true;
@@ -473,17 +465,16 @@ function executeMove(from, to) {
   return true;
 }
 
-function updateCoachCards(moveSAN, classLabel, classCls, bestSAN, cpLoss) {
+function updateCoachCards(moveSAN, classLabel, classCls, bestSAN) {
+  const isBest = moveSAN && bestSAN && moveSAN === bestSAN;
   $('#c-move').text(moveSAN || '—').attr('class', 'coach-value');
   $('#c-class').text(classLabel).attr('class', 'coach-value ' + (classCls || ''));
-  // Show best move; if it matches what was played, highlight green
-  const isBest = moveSAN && bestSAN && moveSAN === bestSAN;
   $('#c-best').text(isBest ? '✓ Yours!' : (bestSAN || '—'))
               .attr('class', 'coach-value ' + (isBest ? 'green' : ''));
 }
 
 // ─────────────────────────────────────────────
-//  CPU move execution
+//  CPU move
 // ─────────────────────────────────────────────
 function getBestCpuMove() {
   const moves = sortMoves(game.moves({ verbose: true }));
@@ -509,58 +500,16 @@ function doCpuMove() {
   cpuThinking = false;
   refreshUI();
 
-  if (game.in_checkmate()) {
-    setFeedback('🏆 Checkmate! Computer wins. Start a new game.', 'end');
-    return;
-  }
-  if (game.in_draw()) {
-    setFeedback('🤝 Draw! Start a new game.', 'end');
-    return;
-  }
+  if (game.in_checkmate()) { setFeedback('🏆 Checkmate! CPU wins.', 'end'); return; }
+  if (game.in_draw())      { setFeedback('🤝 Draw!', 'end'); return; }
 
   const inCheck = game.in_check();
   setFeedback(
-    inCheck
-      ? `🤖 Computer played ${move.san} — ⚡ Check! Defend your king.`
-      : `🤖 Computer played ${move.san}. Your turn!`,
+    inCheck ? `🤖 ${move.san} — ⚡ Check! Defend your king.`
+            : `🤖 Computer played ${move.san}. Your turn!`,
     inCheck ? 'check' : 'cpu'
   );
-
-  // Pre-compute analysis for white's next move so coaching is instant
   setTimeout(analyzePosition, 30);
-}
-
-// ─────────────────────────────────────────────
-//  Square highlights
-// ─────────────────────────────────────────────
-function clearHL() {
-  $('#board .square-55d63').removeClass('sq-sel sq-move sq-capture sq-hint-from sq-hint-to');
-}
-
-function showHint() {
-  if (cpuThinking || game.game_over() || game.turn() !== 'w') return;
-  if (!coachData.topFrom) {
-    setFeedback('💡 Calculating best move… try again in a moment.', 'neutral');
-    return;
-  }
-  clearHL();
-  $(`#board [data-square="${coachData.topFrom}"]`).addClass('sq-hint-from');
-  $(`#board [data-square="${coachData.topTo}"]`).addClass('sq-hint-to');
-  setFeedback(`💡 Hint: Try ${coachData.topSAN} — tap the purple square to move it.`, 'neutral');
-
-  // Auto-clear highlight after 4 seconds
-  setTimeout(() => {
-    $('#board .square-55d63').removeClass('sq-hint-from sq-hint-to');
-  }, 4000);
-}
-function highlightFrom(sq) {
-  selSq    = sq;
-  legalDst = game.moves({ square: sq, verbose: true });
-  clearHL();
-  $(`#board [data-square="${sq}"]`).addClass('sq-sel');
-  legalDst.forEach(m =>
-    $(`#board [data-square="${m.to}"]`).addClass(game.get(m.to) ? 'sq-capture' : 'sq-move')
-  );
 }
 
 // ─────────────────────────────────────────────
@@ -576,46 +525,26 @@ $(document).on('click', '#board [data-square]', function (e) {
     if (piece && piece.color === 'w') highlightFrom(sq);
     return;
   }
-  if (sq === selSq) { clearHL(); selSq = null; legalDst = []; return; }
-  if (legalDst.some(m => m.to === sq)) { executeMove(selSq, sq); return; }
-  if (piece && piece.color === 'w')    { highlightFrom(sq); return; }
+  if (sq === selSq)                        { clearHL(); selSq = null; legalDst = []; return; }
+  if (legalDst.some(m => m.to === sq))     { executeMove(selSq, sq); return; }
+  if (piece && piece.color === 'w')        { highlightFrom(sq); return; }
   clearHL(); selSq = null; legalDst = [];
 });
 
 // ─────────────────────────────────────────────
-//  Drag-and-drop (desktop)
-// ─────────────────────────────────────────────
-function onDragStart(source, piece) {
-  if (cpuThinking || game.game_over() || game.turn() !== 'w') return false;
-  if (piece.startsWith('b')) return false;
-  highlightFrom(source);
-  return true;
-}
-function onDrop(source, target) {
-  clearHL(); selSq = null; legalDst = [];
-  if (source === target) return 'snapback';
-  return executeMove(source, target) ? undefined : 'snapback';
-}
-function onSnapEnd() { board.position(game.fen()); }
-
-// ─────────────────────────────────────────────
-//  Take Back — undoes White + CPU Black together
+//  Take Back
 // ─────────────────────────────────────────────
 function undoLastMove() {
   if (cpuThinking || !game.history().length) return;
-  if (game.turn() === 'w') game.undo(); // undo CPU's black move
-  if (game.history().length) game.undo(); // undo player's white move
+  if (game.turn() === 'w') game.undo();   // undo CPU's reply
+  if (game.history().length) game.undo(); // undo player's move
 
   clearHL(); selSq = null; legalDst = [];
   board.position(game.fen());
   refreshUI();
-
-  // Reset coach cards
-  updateCoachCards('—', '—', '', '—', '—');
+  updateCoachCards('—', '—', '', '—');
   setFeedback(
-    game.history().length
-      ? '↩️ Move taken back. Try a different plan!'
-      : 'You play White. Tap a piece, then tap where to move.',
+    game.history().length ? '↩️ Move taken back. Try again!' : 'You play White. Tap a piece to begin.',
     'neutral'
   );
   setTimeout(analyzePosition, 30);
@@ -629,7 +558,7 @@ function newGame() {
   clearHL(); selSq = null; legalDst = [];
   game = new Chess();
   board.start();
-  updateCoachCards('—', '—', '', '—', '—');
+  updateCoachCards('—', '—', '', '—');
   setFeedback('You play White. Tap a piece, then tap where to move.', 'neutral');
   refreshUI();
   setTimeout(analyzePosition, 50);
@@ -648,12 +577,10 @@ function setFeedback(msg, state) {
 
 function refreshUI() {
   const pill = document.getElementById('turn-pill');
-  if (game.game_over())  { pill.textContent = 'Game Over'; pill.className = 'turn-pill'; }
-  else if (cpuThinking)  { pill.textContent = 'CPU…';      pill.className = 'turn-pill cpu'; }
-  else if (game.turn() === 'w') { pill.textContent = 'Your turn'; pill.className = 'turn-pill white'; }
-  else                   { pill.textContent = 'CPU…';      pill.className = 'turn-pill cpu'; }
+  if (game.game_over())         { pill.textContent = 'Game Over'; pill.className = 'turn-pill'; }
+  else if (cpuThinking || game.turn() === 'b') { pill.textContent = 'CPU…'; pill.className = 'turn-pill cpu'; }
+  else                          { pill.textContent = 'Your turn'; pill.className = 'turn-pill white'; }
 
-  // Move log
   const hist = game.history();
   const log  = document.getElementById('move-log');
   log.innerHTML = '';
@@ -666,18 +593,7 @@ function refreshUI() {
       (hist[i+1] ? `<span class="log-b">${hist[i+1]}</span>` : '');
     log.appendChild(pair);
   }
-  log.scrollTop = log.scrollHeight;
-
-  // Captured pieces
-  const vhist = game.history({ verbose: true });
-  const wCap  = [], bCap = [];
-  vhist.forEach(m => {
-    if (!m.captured) return;
-    const key = (m.color === 'w' ? 'b' : 'w') + m.captured.toUpperCase();
-    (m.color === 'w' ? wCap : bCap).push(GLYPHS[key] || '');
-  });
-  document.getElementById('cap-white').textContent = wCap.join('');
-  document.getElementById('cap-black').textContent = bCap.join('');
+  log.scrollLeft = log.scrollWidth;
 }
 
 // ─────────────────────────────────────────────
@@ -685,20 +601,14 @@ function refreshUI() {
 // ─────────────────────────────────────────────
 $(document).ready(function () {
   board = Chessboard('board', {
-    draggable:     true,
-    position:      'start',
-    onDragStart:   onDragStart,
-    onDrop:        onDrop,
-    onSnapEnd:     onSnapEnd,
-    pieceTheme:    'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-    moveSpeed:     120,
-    snapbackSpeed: 250,
-    snapSpeed:     80
+    draggable:  false,          // tap-only — dragging was causing the page to scroll
+    position:   'start',
+    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+    moveSpeed:  120,
+    snapSpeed:  80
   });
 
   $(window).on('resize', () => board.resize());
-
-  // Pre-compute white's analysis for move 1
   setTimeout(analyzePosition, 100);
 });
 </script>
