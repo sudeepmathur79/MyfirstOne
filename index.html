@@ -21,6 +21,7 @@
       --accent:   #0a84ff;
       --green:    #30d158;
       --red:      #ff453a;
+      --orange:   #ff9f0a;
       --yellow:   #ffd60a;
       --text:     #ffffff;
       --subtext:  #ebebf5cc;
@@ -35,47 +36,44 @@
       -webkit-font-smoothing: antialiased;
       overscroll-behavior: none;
     }
-
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px 12px 40px;
-      min-height: 100dvh;
-      gap: 12px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 16px 12px 40px; min-height: 100dvh; gap: 12px;
     }
 
+    /* ── Header ── */
     header {
       width: 100%; max-width: 390px;
       display: flex; align-items: center; justify-content: space-between;
     }
     .app-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-
     .turn-pill {
-      font-size: 13px; font-weight: 600;
-      padding: 5px 12px; border-radius: 20px;
-      background: var(--surface2); color: var(--subtext);
+      font-size: 13px; font-weight: 600; padding: 5px 12px;
+      border-radius: 20px; background: var(--surface2); color: var(--subtext);
       transition: background 0.25s, color 0.25s;
     }
-    .turn-pill.white  { background: #f0d9b5; color: #1c1c1e; }
-    .turn-pill.black  { background: #b58863; color: #fff; }
-    .turn-pill.cpu    { background: #3a3a3c; color: var(--yellow); }
+    .turn-pill.white { background: #f0d9b5; color: #1c1c1e; }
+    .turn-pill.cpu   { background: var(--surface2); color: var(--yellow); }
 
+    /* ── Feedback banner ── */
     #tutor-feedback {
-      width: 100%; max-width: 390px; min-height: 54px;
+      width: 100%; max-width: 390px; min-height: 64px;
       display: flex; align-items: center; justify-content: center;
-      padding: 10px 16px;
-      border-radius: var(--radius); background: var(--surface);
-      font-size: 15px; font-weight: 600; line-height: 1.35; text-align: center;
+      padding: 10px 16px; border-radius: var(--radius);
+      background: var(--surface); font-size: 14px; font-weight: 600;
+      line-height: 1.4; text-align: center;
       border: 1.5px solid var(--surface2);
       transition: background 0.25s, color 0.25s, border-color 0.25s;
     }
     #tutor-feedback.state-neutral { color: var(--subtext); }
-    #tutor-feedback.state-ok      { color: var(--green);  border-color: rgba(48,209,88,0.4);  background: rgba(48,209,88,0.1); }
-    #tutor-feedback.state-blunder { color: var(--red);    border-color: rgba(255,69,58,0.5);  background: rgba(255,69,58,0.12); animation: shake 0.45s ease; }
-    #tutor-feedback.state-check   { color: var(--yellow); border-color: rgba(255,214,10,0.5); background: rgba(255,214,10,0.1); }
-    #tutor-feedback.state-cpu     { color: var(--yellow); border-color: rgba(255,214,10,0.3); background: rgba(255,214,10,0.06); }
-    #tutor-feedback.state-end     { color: var(--accent); border-color: rgba(10,132,255,0.4); background: rgba(10,132,255,0.1); }
+    #tutor-feedback.state-best    { color: var(--green);   border-color: rgba(48,209,88,0.45);  background: rgba(48,209,88,0.1); }
+    #tutor-feedback.state-good    { color: var(--green);   border-color: rgba(48,209,88,0.3);   background: rgba(48,209,88,0.07); }
+    #tutor-feedback.state-inaccuracy { color: var(--orange); border-color: rgba(255,159,10,0.45); background: rgba(255,159,10,0.09); }
+    #tutor-feedback.state-mistake { color: var(--orange);  border-color: rgba(255,159,10,0.5);  background: rgba(255,159,10,0.12); animation: shake 0.4s ease; }
+    #tutor-feedback.state-blunder { color: var(--red);     border-color: rgba(255,69,58,0.55);  background: rgba(255,69,58,0.12); animation: shake 0.45s ease; }
+    #tutor-feedback.state-check   { color: var(--yellow);  border-color: rgba(255,214,10,0.5);  background: rgba(255,214,10,0.08); }
+    #tutor-feedback.state-cpu     { color: var(--subtext); }
+    #tutor-feedback.state-end     { color: var(--accent);  border-color: rgba(10,132,255,0.4);  background: rgba(10,132,255,0.1); }
 
     @keyframes shake {
       0%,100%{ transform:translateX(0); }
@@ -85,23 +83,42 @@
       80%    { transform:translateX(4px); }
     }
 
-    /* No fixed height — chessboard.js controls it; overflow:hidden was clipping ranks */
+    /* ── Board ── */
     #board-wrapper {
       border-radius: var(--radius);
       box-shadow: 0 8px 32px rgba(0,0,0,0.6);
       line-height: 0;
     }
-    #board {
-      width: 85vw !important;
-      max-width: 350px !important;
-    }
+    #board { width: 85vw !important; max-width: 350px !important; }
 
-    /* Tap-to-move highlights */
     #board .sq-sel     { background: rgba(255,214,10,0.7)  !important; }
     #board .sq-move    { background: rgba(48,209,88,0.55)  !important; }
     #board .sq-capture { background: rgba(255,69,58,0.6)   !important; }
     #board .square-55d63 { transition: background 0.08s; }
 
+    /* ── Coaching detail row ── */
+    #coaching-row {
+      width: 100%; max-width: 390px;
+      display: flex; gap: 8px;
+    }
+    .coach-card {
+      flex: 1; background: var(--surface);
+      border-radius: 10px; padding: 8px 10px;
+      border: 1px solid var(--surface2);
+      text-align: center; min-height: 46px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+    }
+    .coach-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.7px;
+      text-transform: uppercase; color: var(--subtext);
+    }
+    .coach-value { font-size: 15px; font-weight: 700; color: var(--text); }
+    .coach-value.green  { color: var(--green); }
+    .coach-value.orange { color: var(--orange); }
+    .coach-value.red    { color: var(--red); }
+
+    /* ── Captured ── */
     #captured-wrap { width: 100%; max-width: 390px; display: flex; gap: 8px; }
     .captured-side {
       flex: 1; background: var(--surface);
@@ -114,10 +131,11 @@
     }
     .cap-pieces { font-size: 17px; line-height: 1.3; min-height: 22px; }
 
+    /* ── Move log ── */
     #move-log-wrap {
-      width: 100%; max-width: 390px;
-      background: var(--surface); border-radius: var(--radius);
-      padding: 10px 14px; border: 1px solid var(--surface2);
+      width: 100%; max-width: 390px; background: var(--surface);
+      border-radius: var(--radius); padding: 10px 14px;
+      border: 1px solid var(--surface2);
     }
     .log-header {
       font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
@@ -125,7 +143,7 @@
     }
     #move-log {
       display: flex; flex-wrap: wrap; gap: 3px 6px;
-      max-height: 56px; overflow-y: auto;
+      max-height: 52px; overflow-y: auto;
       font-size: 13px; font-variant-numeric: tabular-nums;
     }
     #move-log::-webkit-scrollbar { width: 3px; }
@@ -135,11 +153,12 @@
     .log-w    { color: var(--text); }
     .log-b    { color: #b58863; }
 
+    /* ── Buttons ── */
     .btn-row { width: 100%; max-width: 390px; display: flex; gap: 10px; }
     button {
-      flex: 1; height: 52px; border: none;
-      border-radius: var(--radius); font-size: 16px; font-weight: 700;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      flex: 1; height: 52px; border: none; border-radius: var(--radius);
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
       transition: opacity 0.15s, transform 0.1s;
     }
     button:active { transform: scale(0.96); opacity: 0.82; }
@@ -162,13 +181,29 @@
   <div id="board"></div>
 </div>
 
+<!-- Coaching summary cards shown after each white move -->
+<div id="coaching-row">
+  <div class="coach-card">
+    <span class="coach-label">Your Move</span>
+    <span class="coach-value" id="c-move">—</span>
+  </div>
+  <div class="coach-card">
+    <span class="coach-label">Classification</span>
+    <span class="coach-value" id="c-class">—</span>
+  </div>
+  <div class="coach-card">
+    <span class="coach-label">Best Move</span>
+    <span class="coach-value" id="c-best">—</span>
+  </div>
+</div>
+
 <div id="captured-wrap">
   <div class="captured-side">
     <div class="cap-label">You captured</div>
     <div class="cap-pieces" id="cap-white"></div>
   </div>
   <div class="captured-side">
-    <div class="cap-label">Computer captured</div>
+    <div class="cap-label">CPU captured</div>
     <div class="cap-pieces" id="cap-black"></div>
   </div>
 </div>
@@ -185,74 +220,61 @@
 
 <script>
 // ─────────────────────────────────────────────
-//  Constants
+//  Engine constants
 // ─────────────────────────────────────────────
 const PIECE_SCORES = { p:100, n:320, b:330, r:500, q:900, k:20000 };
-const CPU_DEPTH    = 2;   // minimax depth (2 = looks 2 half-moves ahead, fast on mobile)
+const CPU_DEPTH    = 2;
 
-// Piece-square tables — from White's perspective, rank 8 first, files a→h.
-// Black pieces mirror vertically (rank flipped).
+// Piece-square tables — rank 8 first, files a→h, positive = good for that colour.
 const PST = {
-  p: [
-     0,  0,  0,  0,  0,  0,  0,  0,  // rank 8
-    50, 50, 50, 50, 50, 50, 50, 50,  // rank 7
-    10, 10, 20, 30, 30, 20, 10, 10,  // rank 6
-     5,  5, 10, 25, 25, 10,  5,  5,  // rank 5
-     0,  0,  0, 20, 20,  0,  0,  0,  // rank 4
-     5, -5,-10,  0,  0,-10, -5,  5,  // rank 3
-     5, 10, 10,-20,-20, 10, 10,  5,  // rank 2 (central pawns penalised to encourage push)
-     0,  0,  0,  0,  0,  0,  0,  0   // rank 1
-  ],
-  n: [
-    -50,-40,-30,-30,-30,-30,-40,-50,
-    -40,-20,  0,  0,  0,  0,-20,-40,
-    -30,  0, 10, 15, 15, 10,  0,-30,
-    -30,  5, 15, 20, 20, 15,  5,-30,
-    -30,  0, 15, 20, 20, 15,  0,-30,
-    -30,  5, 10, 15, 15, 10,  5,-30,
-    -40,-20,  0,  5,  5,  0,-20,-40,
-    -50,-40,-30,-30,-30,-30,-40,-50
-  ],
-  b: [
-    -20,-10,-10,-10,-10,-10,-10,-20,
-    -10,  0,  0,  0,  0,  0,  0,-10,
-    -10,  0,  5, 10, 10,  5,  0,-10,
-    -10,  5,  5, 10, 10,  5,  5,-10,
-    -10,  0, 10, 10, 10, 10,  0,-10,
-    -10, 10, 10, 10, 10, 10, 10,-10,
-    -10,  5,  0,  0,  0,  0,  5,-10,
-    -20,-10,-10,-10,-10,-10,-10,-20
-  ],
-  r: [
-     0,  0,  0,  0,  0,  0,  0,  0,
-     5, 10, 10, 10, 10, 10, 10,  5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-     0,  0,  0,  5,  5,  0,  0,  0
-  ],
-  q: [
-    -20,-10,-10, -5, -5,-10,-10,-20,
-    -10,  0,  0,  0,  0,  0,  0,-10,
-    -10,  0,  5,  5,  5,  5,  0,-10,
-     -5,  0,  5,  5,  5,  5,  0, -5,
-      0,  0,  5,  5,  5,  5,  0, -5,
-    -10,  5,  5,  5,  5,  5,  0,-10,
-    -10,  0,  5,  0,  0,  0,  0,-10,
-    -20,-10,-10, -5, -5,-10,-10,-20
-  ],
-  k: [
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -20,-30,-30,-40,-40,-30,-30,-20,
-    -10,-20,-20,-20,-20,-20,-20,-10,
-     20, 20,  0,  0,  0,  0, 20, 20,
-     20, 30, 10,  0,  0, 10, 30, 20
-  ]
+  p:[  0,  0,  0,  0,  0,  0,  0,  0,
+      50, 50, 50, 50, 50, 50, 50, 50,
+      10, 10, 20, 30, 30, 20, 10, 10,
+       5,  5, 10, 25, 25, 10,  5,  5,
+       0,  0,  0, 20, 20,  0,  0,  0,
+       5, -5,-10,  0,  0,-10, -5,  5,
+       5, 10, 10,-20,-20, 10, 10,  5,
+       0,  0,  0,  0,  0,  0,  0,  0],
+  n:[-50,-40,-30,-30,-30,-30,-40,-50,
+     -40,-20,  0,  0,  0,  0,-20,-40,
+     -30,  0, 10, 15, 15, 10,  0,-30,
+     -30,  5, 15, 20, 20, 15,  5,-30,
+     -30,  0, 15, 20, 20, 15,  0,-30,
+     -30,  5, 10, 15, 15, 10,  5,-30,
+     -40,-20,  0,  5,  5,  0,-20,-40,
+     -50,-40,-30,-30,-30,-30,-40,-50],
+  b:[-20,-10,-10,-10,-10,-10,-10,-20,
+     -10,  0,  0,  0,  0,  0,  0,-10,
+     -10,  0,  5, 10, 10,  5,  0,-10,
+     -10,  5,  5, 10, 10,  5,  5,-10,
+     -10,  0, 10, 10, 10, 10,  0,-10,
+     -10, 10, 10, 10, 10, 10, 10,-10,
+     -10,  5,  0,  0,  0,  0,  5,-10,
+     -20,-10,-10,-10,-10,-10,-10,-20],
+  r:[  0,  0,  0,  0,  0,  0,  0,  0,
+       5, 10, 10, 10, 10, 10, 10,  5,
+      -5,  0,  0,  0,  0,  0,  0, -5,
+      -5,  0,  0,  0,  0,  0,  0, -5,
+      -5,  0,  0,  0,  0,  0,  0, -5,
+      -5,  0,  0,  0,  0,  0,  0, -5,
+      -5,  0,  0,  0,  0,  0,  0, -5,
+       0,  0,  0,  5,  5,  0,  0,  0],
+  q:[-20,-10,-10, -5, -5,-10,-10,-20,
+     -10,  0,  0,  0,  0,  0,  0,-10,
+     -10,  0,  5,  5,  5,  5,  0,-10,
+      -5,  0,  5,  5,  5,  5,  0, -5,
+       0,  0,  5,  5,  5,  5,  0, -5,
+     -10,  5,  5,  5,  5,  5,  0,-10,
+     -10,  0,  5,  0,  0,  0,  0,-10,
+     -20,-10,-10, -5, -5,-10,-10,-20],
+  k:[-30,-40,-40,-50,-50,-40,-40,-30,
+     -30,-40,-40,-50,-50,-40,-40,-30,
+     -30,-40,-40,-50,-50,-40,-40,-30,
+     -30,-40,-40,-50,-50,-40,-40,-30,
+     -20,-30,-30,-40,-40,-30,-30,-20,
+     -10,-20,-20,-20,-20,-20,-20,-10,
+      20, 20,  0,  0,  0,  0, 20, 20,
+      20, 30, 10,  0,  0, 10, 30, 20]
 };
 
 const GLYPHS = {
@@ -269,65 +291,51 @@ let selSq       = null;
 let legalDst    = [];
 let cpuThinking = false;
 
-// ─────────────────────────────────────────────
-//  Square highlights
-// ─────────────────────────────────────────────
-function clearHL() {
-  $('#board .square-55d63').removeClass('sq-sel sq-move sq-capture');
-}
-
-function highlightFrom(sq) {
-  selSq    = sq;
-  legalDst = game.moves({ square: sq, verbose: true });
-  clearHL();
-  $(`#board [data-square="${sq}"]`).addClass('sq-sel');
-  legalDst.forEach(m => {
-    $(`#board [data-square="${m.to}"]`).addClass(game.get(m.to) ? 'sq-capture' : 'sq-move');
-  });
-}
+// Pre-move coaching data (populated by analyzePosition before each white move)
+let coachData = {
+  moveScores: new Map(), // "from+to" → score from white's perspective
+  topScore:   0,
+  topSAN:     '—'
+};
 
 // ─────────────────────────────────────────────
-//  Evaluation & Minimax
+//  Evaluation & Negamax
 // ─────────────────────────────────────────────
-function pstIndex(r, f, isWhite) {
-  // r = board row (0=rank8, 7=rank1), f = file (0=a, 7=h)
-  return isWhite ? r * 8 + f : (7 - r) * 8 + f;
-}
-
 function evaluate() {
   if (game.in_checkmate()) return game.turn() === 'w' ? -99999 : 99999;
   if (game.in_draw())      return 0;
-
   let score = 0;
   const b   = game.board();
   for (let r = 0; r < 8; r++) {
     for (let f = 0; f < 8; f++) {
       const pc = b[r][f];
       if (!pc) continue;
-      const isW  = pc.color === 'w';
-      const val  = PIECE_SCORES[pc.type] + (PST[pc.type]?.[pstIndex(r, f, isW)] ?? 0);
-      score     += isW ? val : -val;
+      const isW = pc.color === 'w';
+      // White: PST row 0 = rank 8 → index r*8+f
+      // Black: mirror vertically → (7-r)*8+f
+      const pi  = (PST[pc.type] || [])[isW ? r * 8 + f : (7 - r) * 8 + f] || 0;
+      score    += isW ? PIECE_SCORES[pc.type] + pi : -(PIECE_SCORES[pc.type] + pi);
     }
   }
   return score;
 }
 
-// Negamax: returns score from current player's perspective (positive = good for them).
+function sortMoves(moves) {
+  return moves.sort((a, b) => {
+    const av = a.captured ? PIECE_SCORES[a.captured] * 10 - PIECE_SCORES[a.piece] : 0;
+    const bv = b.captured ? PIECE_SCORES[b.captured] * 10 - PIECE_SCORES[b.piece] : 0;
+    return bv - av;
+  });
+}
+
+// Negamax with alpha-beta. Returns score from CURRENT player's perspective.
 function negamax(depth, alpha, beta) {
   if (depth === 0) {
     const raw = evaluate();
     return game.turn() === 'w' ? raw : -raw;
   }
-
-  const moves = game.moves({ verbose: true });
+  const moves = sortMoves(game.moves({ verbose: true }));
   if (!moves.length) return game.in_check() ? -99999 : 0;
-
-  // MVV-LVA move ordering to improve pruning
-  moves.sort((a, b) => {
-    const av = a.captured ? PIECE_SCORES[a.captured] * 10 - PIECE_SCORES[a.piece] : 0;
-    const bv = b.captured ? PIECE_SCORES[b.captured] * 10 - PIECE_SCORES[b.piece] : 0;
-    return bv - av;
-  });
 
   let best = -Infinity;
   for (const m of moves) {
@@ -341,71 +349,58 @@ function negamax(depth, alpha, beta) {
   return best;
 }
 
-function getBestCpuMove() {
-  const moves = game.moves({ verbose: true });
-  if (!moves.length) return null;
+// ─────────────────────────────────────────────
+//  Pre-move coaching analysis
+//  Scores every legal white move BEFORE the player touches a piece.
+//  Called once after CPU plays (and at game start / after undo).
+// ─────────────────────────────────────────────
+function analyzePosition() {
+  coachData.moveScores.clear();
+  coachData.topScore = -Infinity;
+  coachData.topSAN   = '—';
 
-  moves.sort((a, b) => {
-    const av = a.captured ? PIECE_SCORES[a.captured] * 10 - PIECE_SCORES[a.piece] : 0;
-    const bv = b.captured ? PIECE_SCORES[b.captured] * 10 - PIECE_SCORES[b.piece] : 0;
-    return bv - av;
-  });
+  if (game.game_over() || game.turn() !== 'w') return;
 
-  let bestMove  = moves[0];
-  let bestScore = -Infinity;
-  let alpha     = -Infinity;
+  const moves = sortMoves(
+    game.moves({ verbose: true }).filter(m => !m.promotion || m.promotion === 'q')
+  );
 
+  let alpha = -Infinity;
   for (const m of moves) {
     game.move(m);
+    // Score after white's move: negate negamax (which runs for black now)
     const score = -negamax(CPU_DEPTH - 1, -Infinity, -alpha);
     game.undo();
-    if (score > bestScore) { bestScore = score; bestMove = m; }
-    if (score > alpha)       alpha = score;
+
+    coachData.moveScores.set(m.from + m.to, { score, san: m.san });
+    if (score > coachData.topScore) {
+      coachData.topScore = score;
+      coachData.topSAN   = m.san;
+    }
+    if (score > alpha) alpha = score;
   }
-  return bestMove;
 }
 
 // ─────────────────────────────────────────────
-//  Blunder detection (for White's moves)
+//  Move classification
 // ─────────────────────────────────────────────
-function evalMove() {
-  let worstLoss = 0;
-  for (const om of game.moves({ verbose: true })) {
-    if (!om.captured) continue;
-    const gained = PIECE_SCORES[om.captured];
-    const risked = PIECE_SCORES[om.piece];
-    const tmp    = new Chess(game.fen());
-    tmp.move(om);
-    const canRecap = tmp.moves({ verbose: true }).some(r => r.to === om.to && r.captured);
-    const net = canRecap ? gained - risked : gained;
-    if (net > worstLoss) worstLoss = net;
-  }
-  return worstLoss >= 2; // minor piece or better hanging = blunder
+function classify(cpLoss) {
+  if (cpLoss <= 20)  return { label: '✅ Best!',       cls: 'best',       state: 'best'       };
+  if (cpLoss <= 60)  return { label: '✅ Good',        cls: 'good',       state: 'good'       };
+  if (cpLoss <= 150) return { label: '⚠️ Inaccuracy',  cls: 'orange',     state: 'inaccuracy' };
+  if (cpLoss <= 350) return { label: '⚠️ Mistake',     cls: 'orange',     state: 'mistake'    };
+  return               { label: '❌ Blunder!',      cls: 'red',        state: 'blunder'    };
 }
 
-// ─────────────────────────────────────────────
-//  CPU move execution
-// ─────────────────────────────────────────────
-function doCpuMove() {
-  if (game.game_over()) { cpuThinking = false; return; }
+function coachMessage(cpLoss, bestSAN, playedSAN, inCheck) {
+  if (inCheck && cpLoss <= 60) return `⚡ Check! Great move — you put the king under attack.`;
+  if (inCheck)                 return `⚡ Check! But ${bestSAN} was even stronger.`;
 
-  const move = getBestCpuMove();
-  if (!move) { cpuThinking = false; return; }
-
-  game.move(move);
-  board.position(game.fen());
-  cpuThinking = false;
-  refreshUI();
-
-  if (game.in_checkmate()) {
-    setFeedback('🏆 Checkmate! Computer wins. Start a new game!', 'end');
-  } else if (game.in_draw()) {
-    setFeedback('🤝 Draw! Start a new game.', 'end');
-  } else if (game.in_check()) {
-    setFeedback(`🤖 Computer played ${move.san} — ⚡ Check! Get your king to safety.`, 'check');
-  } else {
-    setFeedback(`🤖 Computer played ${move.san}. Your move!`, 'neutral');
-  }
+  if (cpLoss <= 20) return `✅ Best move! That's the engine's top pick — well done.`;
+  if (cpLoss <= 60) return `✅ Good move! Solid choice. Engine also liked ${bestSAN}.`;
+  if (cpLoss <= 150) return `⚠️ Slight inaccuracy. ${bestSAN} would have been a bit better.`;
+  if (cpLoss <= 350) return `⚠️ Mistake! ${bestSAN} was the stronger option here.`;
+  return `❌ Blunder! You had ${bestSAN} available — hit Take Back and try again!`;
 }
 
 // ─────────────────────────────────────────────
@@ -414,6 +409,10 @@ function doCpuMove() {
 function executeMove(from, to) {
   if (cpuThinking || game.game_over() || game.turn() !== 'w') return false;
 
+  // Look up this move's pre-computed score BEFORE making it
+  const entry    = coachData.moveScores.get(from + to);
+  const cpLoss   = entry ? Math.max(0, coachData.topScore - entry.score) : null;
+
   const move = game.move({ from, to, promotion: 'q' });
   if (!move) return false;
 
@@ -421,27 +420,39 @@ function executeMove(from, to) {
   board.position(game.fen());
   refreshUI();
 
+  // Game-over shortcuts
   if (game.in_checkmate()) {
-    setFeedback('🏆 Checkmate! You win!', 'end');
+    setFeedback('🏆 Checkmate! You win! Start a new game.', 'end');
+    updateCoachCards(move.san, '✅ Best!', 'best', coachData.topSAN, '—');
     return true;
   }
   if (game.in_draw()) {
-    setFeedback('🤝 Draw! Well played.', 'end');
+    setFeedback('🤝 Draw! Start a new game.', 'end');
     return true;
   }
 
-  const isBlunder = evalMove();
-  let   delay     = 500;
+  // Coaching
+  const inCheck  = game.in_check();
+  let   msgState = 'good';
+  let   delay    = 500;
 
-  if (isBlunder) {
-    setFeedback('❌ Blunder! Your position dropped. Hit Take Back and try again!', 'blunder');
-    delay = 1400; // give the user time to read the warning before computer strikes
-  } else if (game.in_check()) {
-    setFeedback('⚡ Check! You put the king under attack!', 'check');
-    delay = 500;
+  if (cpLoss !== null) {
+    const c = classify(cpLoss);
+    msgState = c.state;
+    const msg = coachMessage(cpLoss, coachData.topSAN, move.san, inCheck);
+    setFeedback(msg, c.state);
+    updateCoachCards(move.san, c.label, c.cls, coachData.topSAN, cpLoss);
+    if (c.state === 'blunder') delay = 1400;
+    else if (c.state === 'mistake') delay = 1000;
   } else {
-    setFeedback('✅ Good move! Computer is thinking…', 'ok');
-    delay = 400;
+    // Fallback if analysis wasn't ready
+    if (inCheck) {
+      setFeedback('⚡ Check! You put the king under attack!', 'check');
+      msgState = 'check';
+    } else {
+      setFeedback('✅ Move played. Computer is thinking…', 'good');
+    }
+    updateCoachCards(move.san, '—', '', '—', '—');
   }
 
   cpuThinking = true;
@@ -449,13 +460,85 @@ function executeMove(from, to) {
   return true;
 }
 
+function updateCoachCards(moveSAN, classLabel, classCls, bestSAN, cpLoss) {
+  $('#c-move').text(moveSAN || '—').attr('class', 'coach-value');
+  $('#c-class').text(classLabel).attr('class', 'coach-value ' + (classCls || ''));
+  // Show best move; if it matches what was played, highlight green
+  const isBest = moveSAN && bestSAN && moveSAN === bestSAN;
+  $('#c-best').text(isBest ? '✓ Yours!' : (bestSAN || '—'))
+              .attr('class', 'coach-value ' + (isBest ? 'green' : ''));
+}
+
 // ─────────────────────────────────────────────
-//  Tap-to-move (event delegation survives DOM rebuilds)
+//  CPU move execution
+// ─────────────────────────────────────────────
+function getBestCpuMove() {
+  const moves = sortMoves(game.moves({ verbose: true }));
+  if (!moves.length) return null;
+  let best = null, bestScore = -Infinity, alpha = -Infinity;
+  for (const m of moves) {
+    game.move(m);
+    const score = -negamax(CPU_DEPTH - 1, -Infinity, -alpha);
+    game.undo();
+    if (score > bestScore) { bestScore = score; best = m; }
+    if (score > alpha)       alpha = score;
+  }
+  return best;
+}
+
+function doCpuMove() {
+  if (game.game_over()) { cpuThinking = false; return; }
+  const move = getBestCpuMove();
+  if (!move)            { cpuThinking = false; return; }
+
+  game.move(move);
+  board.position(game.fen());
+  cpuThinking = false;
+  refreshUI();
+
+  if (game.in_checkmate()) {
+    setFeedback('🏆 Checkmate! Computer wins. Start a new game.', 'end');
+    return;
+  }
+  if (game.in_draw()) {
+    setFeedback('🤝 Draw! Start a new game.', 'end');
+    return;
+  }
+
+  const inCheck = game.in_check();
+  setFeedback(
+    inCheck
+      ? `🤖 Computer played ${move.san} — ⚡ Check! Defend your king.`
+      : `🤖 Computer played ${move.san}. Your turn!`,
+    inCheck ? 'check' : 'cpu'
+  );
+
+  // Pre-compute analysis for white's next move so coaching is instant
+  setTimeout(analyzePosition, 30);
+}
+
+// ─────────────────────────────────────────────
+//  Square highlights
+// ─────────────────────────────────────────────
+function clearHL() {
+  $('#board .square-55d63').removeClass('sq-sel sq-move sq-capture');
+}
+function highlightFrom(sq) {
+  selSq    = sq;
+  legalDst = game.moves({ square: sq, verbose: true });
+  clearHL();
+  $(`#board [data-square="${sq}"]`).addClass('sq-sel');
+  legalDst.forEach(m =>
+    $(`#board [data-square="${m.to}"]`).addClass(game.get(m.to) ? 'sq-capture' : 'sq-move')
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Tap-to-move
 // ─────────────────────────────────────────────
 $(document).on('click', '#board [data-square]', function (e) {
   e.stopPropagation();
   if (cpuThinking || game.game_over() || game.turn() !== 'w') return;
-
   const sq    = $(this).data('square');
   const piece = game.get(sq);
 
@@ -463,21 +546,14 @@ $(document).on('click', '#board [data-square]', function (e) {
     if (piece && piece.color === 'w') highlightFrom(sq);
     return;
   }
-
   if (sq === selSq) { clearHL(); selSq = null; legalDst = []; return; }
-
-  if (legalDst.some(m => m.to === sq)) {
-    executeMove(selSq, sq);
-    return;
-  }
-
-  if (piece && piece.color === 'w') { highlightFrom(sq); return; }
-
+  if (legalDst.some(m => m.to === sq)) { executeMove(selSq, sq); return; }
+  if (piece && piece.color === 'w')    { highlightFrom(sq); return; }
   clearHL(); selSq = null; legalDst = [];
 });
 
 // ─────────────────────────────────────────────
-//  Drag-and-drop (desktop / power users)
+//  Drag-and-drop (desktop)
 // ─────────────────────────────────────────────
 function onDragStart(source, piece) {
   if (cpuThinking || game.game_over() || game.turn() !== 'w') return false;
@@ -485,36 +561,34 @@ function onDragStart(source, piece) {
   highlightFrom(source);
   return true;
 }
-
 function onDrop(source, target) {
   clearHL(); selSq = null; legalDst = [];
   if (source === target) return 'snapback';
   return executeMove(source, target) ? undefined : 'snapback';
 }
-
 function onSnapEnd() { board.position(game.fen()); }
 
 // ─────────────────────────────────────────────
-//  Take Back — undoes White + Black moves together
+//  Take Back — undoes White + CPU Black together
 // ─────────────────────────────────────────────
 function undoLastMove() {
   if (cpuThinking || !game.history().length) return;
-
-  // If it's White's turn, the computer already replied — undo Black then White
-  if (game.turn() === 'w') game.undo();
-  // Now undo White's move (brings us back to White's turn)
-  if (game.history().length) game.undo();
+  if (game.turn() === 'w') game.undo(); // undo CPU's black move
+  if (game.history().length) game.undo(); // undo player's white move
 
   clearHL(); selSq = null; legalDst = [];
   board.position(game.fen());
   refreshUI();
 
+  // Reset coach cards
+  updateCoachCards('—', '—', '', '—', '—');
   setFeedback(
     game.history().length
       ? '↩️ Move taken back. Try a different plan!'
       : 'You play White. Tap a piece, then tap where to move.',
     'neutral'
   );
+  setTimeout(analyzePosition, 30);
 }
 
 // ─────────────────────────────────────────────
@@ -525,8 +599,10 @@ function newGame() {
   clearHL(); selSq = null; legalDst = [];
   game = new Chess();
   board.start();
+  updateCoachCards('—', '—', '', '—', '—');
   setFeedback('You play White. Tap a piece, then tap where to move.', 'neutral');
   refreshUI();
+  setTimeout(analyzePosition, 50);
 }
 
 // ─────────────────────────────────────────────
@@ -535,27 +611,19 @@ function newGame() {
 function setFeedback(msg, state) {
   const el = document.getElementById('tutor-feedback');
   el.className = '';
-  void el.offsetWidth; // restart animation
+  void el.offsetWidth;
   el.className   = 'state-' + state;
   el.textContent = msg;
 }
 
 function refreshUI() {
-  updateTurnPill();
-  updateMoveLog();
-  updateCaptured();
-}
-
-function updateTurnPill() {
   const pill = document.getElementById('turn-pill');
-  if (game.game_over())    { pill.textContent = 'Game Over';    pill.className = 'turn-pill'; return; }
-  if (cpuThinking)         { pill.textContent = 'CPU thinking'; pill.className = 'turn-pill cpu'; return; }
-  const t = game.turn();
-  pill.textContent = t === 'w' ? 'Your turn' : 'CPU thinking';
-  pill.className   = 'turn-pill ' + (t === 'w' ? 'white' : 'cpu');
-}
+  if (game.game_over())  { pill.textContent = 'Game Over'; pill.className = 'turn-pill'; }
+  else if (cpuThinking)  { pill.textContent = 'CPU…';      pill.className = 'turn-pill cpu'; }
+  else if (game.turn() === 'w') { pill.textContent = 'Your turn'; pill.className = 'turn-pill white'; }
+  else                   { pill.textContent = 'CPU…';      pill.className = 'turn-pill cpu'; }
 
-function updateMoveLog() {
+  // Move log
   const hist = game.history();
   const log  = document.getElementById('move-log');
   log.innerHTML = '';
@@ -569,12 +637,11 @@ function updateMoveLog() {
     log.appendChild(pair);
   }
   log.scrollTop = log.scrollHeight;
-}
 
-function updateCaptured() {
-  const hist = game.history({ verbose: true });
-  const wCap = [], bCap = [];
-  hist.forEach(m => {
+  // Captured pieces
+  const vhist = game.history({ verbose: true });
+  const wCap  = [], bCap = [];
+  vhist.forEach(m => {
     if (!m.captured) return;
     const key = (m.color === 'w' ? 'b' : 'w') + m.captured.toUpperCase();
     (m.color === 'w' ? wCap : bCap).push(GLYPHS[key] || '');
@@ -599,7 +666,10 @@ $(document).ready(function () {
     snapSpeed:     80
   });
 
-  $(window).on('resize', function () { board.resize(); });
+  $(window).on('resize', () => board.resize());
+
+  // Pre-compute white's analysis for move 1
+  setTimeout(analyzePosition, 100);
 });
 </script>
 </body>
