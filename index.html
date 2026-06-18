@@ -30,10 +30,7 @@
     }
 
     /* Lock page to viewport — no scroll */
-    html {
-      height: 100%;
-      overflow: hidden;
-    }
+    html, body { margin: 0; padding: 0; }
 
     body {
       background: var(--bg); color: var(--text);
@@ -41,12 +38,10 @@
                    "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       overscroll-behavior: none;
-      /* Do NOT set touch-action here — it would block tap events on mobile */
 
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       display: flex; flex-direction: column; align-items: center;
       justify-content: space-between;
-      /* 100dvh = visible height minus browser chrome; fall back to 100vh */
-      height: 100vh; height: 100dvh;
       overflow: hidden;
       padding: env(safe-area-inset-top, 10px) 12px env(safe-area-inset-bottom, 10px);
     }
@@ -104,8 +99,8 @@
       /* touch-action none stops board touches from scrolling the page */
       touch-action: none;
     }
-    /* Width drives the square size chessboard.js calculates — no height constraint */
-    #board { width: min(78vw, 320px) !important; }
+    /* JS overrides this to exact pixel size before Chessboard() init */
+    #board { width: 280px !important; }
 
     /* Square interaction highlights */
     #board .sq-sel       { background: rgba(255,214,10,0.7)  !important; }
@@ -604,18 +599,43 @@ function refreshUI() {
 }
 
 // ─────────────────────────────────────────────
+//  Board sizing — measures actual DOM heights so any font/zoom works
+// ─────────────────────────────────────────────
+function setBoardSize() {
+  const elIds = ['tutor-feedback', 'coaching-row', 'move-log-wrap'];
+  let fixedH = 0;
+  elIds.forEach(id => { fixedH += (document.getElementById(id) || {offsetHeight:0}).offsetHeight; });
+  fixedH += (document.querySelector('header')   || {offsetHeight:0}).offsetHeight;
+  fixedH += (document.querySelector('.btn-row') || {offsetHeight:0}).offsetHeight;
+
+  const bodyStyle = window.getComputedStyle(document.body);
+  const padV = parseFloat(bodyStyle.paddingTop) + parseFloat(bodyStyle.paddingBottom);
+  const minGaps = 5 * 5; // 5 gaps between 6 flex items, minimum 5px each
+
+  const byHeight = window.innerHeight - fixedH - padV - minGaps;
+  const byWidth  = window.innerWidth  * 0.88;
+  const size     = Math.floor(Math.min(byHeight, byWidth, 340));
+
+  document.getElementById('board').style.setProperty('width', Math.max(size, 180) + 'px', 'important');
+  if (board) board.resize();
+}
+
+// ─────────────────────────────────────────────
 //  Board init
 // ─────────────────────────────────────────────
 $(document).ready(function () {
+  setBoardSize(); // set size before Chessboard reads the element width
+
   board = Chessboard('board', {
-    draggable:  false,          // tap-only — dragging was causing the page to scroll
+    draggable:  false,
     position:   'start',
     pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
     moveSpeed:  120,
     snapSpeed:  80
   });
 
-  $(window).on('resize', () => board.resize());
+  setBoardSize(); // re-apply after Chessboard may have altered the element
+  $(window).on('resize', setBoardSize);
   setTimeout(analyzePosition, 100);
 });
 </script>
