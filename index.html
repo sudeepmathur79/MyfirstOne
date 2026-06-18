@@ -30,47 +30,51 @@
     }
 
     /* Lock page to viewport — no scroll */
-    html, body {
-      height: 100%; overflow: hidden;
+    html {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
       background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
                    "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       overscroll-behavior: none;
-      touch-action: none;      /* prevents pull-to-refresh / pan on outer container */
-    }
+      /* Do NOT set touch-action here — it would block tap events on mobile */
 
-    body {
       display: flex; flex-direction: column; align-items: center;
-      justify-content: space-evenly;   /* distribute remaining space evenly */
-      padding: 8px 12px env(safe-area-inset-bottom, 8px);
-      height: 100dvh;                  /* uses actual visible viewport height */
+      justify-content: space-between;
+      /* 100dvh = visible height minus browser chrome; fall back to 100vh */
+      height: 100vh; height: 100dvh;
+      overflow: hidden;
+      padding: env(safe-area-inset-top, 10px) 12px env(safe-area-inset-bottom, 10px);
     }
 
     /* ── Header ── */
     header {
-      width: 100%; max-width: 390px;
+      width: 100%; max-width: 390px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0;
     }
-    .app-title { font-size: 19px; font-weight: 700; letter-spacing: -0.4px; }
+    .app-title { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
     .turn-pill {
-      font-size: 12px; font-weight: 600; padding: 4px 11px;
+      font-size: 12px; font-weight: 600; padding: 4px 10px;
       border-radius: 20px; background: var(--surface2); color: var(--subtext);
       transition: background 0.25s, color 0.25s;
     }
     .turn-pill.white { background: #f0d9b5; color: #1c1c1e; }
     .turn-pill.cpu   { background: var(--surface2); color: var(--yellow); }
 
-    /* ── Feedback banner ── */
+    /* ── Feedback banner — fixed 2-line height ── */
     #tutor-feedback {
-      width: 100%; max-width: 390px;
-      min-height: 46px; flex-shrink: 0;
+      width: 100%; max-width: 390px; flex-shrink: 0;
+      height: 52px;                        /* fixed: no layout shift */
       display: flex; align-items: center; justify-content: center;
-      padding: 8px 14px; border-radius: var(--radius);
+      padding: 6px 14px; border-radius: var(--radius);
       background: var(--surface);
-      font-size: 13px; font-weight: 600; line-height: 1.35; text-align: center;
+      font-size: 13px; font-weight: 600; line-height: 1.3; text-align: center;
       border: 1.5px solid var(--surface2);
+      overflow: hidden;                    /* clip if text somehow exceeds 2 lines */
       transition: background 0.25s, color 0.25s, border-color 0.25s;
     }
     #tutor-feedback.state-neutral    { color: var(--subtext); }
@@ -115,12 +119,13 @@
 
     /* ── Coaching summary row ── */
     #coaching-row {
-      width: 100%; max-width: 390px;
-      display: flex; gap: 6px; flex-shrink: 0;
+      width: 100%; max-width: 390px; flex-shrink: 0;
+      display: flex; gap: 6px;
+      height: 44px;
     }
     .coach-card {
       flex: 1; background: var(--surface); border-radius: 9px;
-      padding: 5px 6px; border: 1px solid var(--surface2);
+      padding: 4px 6px; border: 1px solid var(--surface2);
       text-align: center; display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 1px;
     }
@@ -128,14 +133,15 @@
       font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
       text-transform: uppercase; color: var(--subtext);
     }
-    .coach-value       { font-size: 13px; font-weight: 700; color: var(--text); }
+    .coach-value        { font-size: 13px; font-weight: 700; color: var(--text); }
     .coach-value.green  { color: var(--green); }
     .coach-value.orange { color: var(--orange); }
     .coach-value.red    { color: var(--red); }
 
-    /* ── Move log (single compact scrollable line) ── */
+    /* ── Move log — single compact scrollable line ── */
     #move-log-wrap {
       width: 100%; max-width: 390px; flex-shrink: 0;
+      height: 22px;
       display: flex; align-items: center; gap: 6px;
     }
     .log-tag {
@@ -144,24 +150,25 @@
     }
     #move-log {
       flex: 1; display: flex; flex-wrap: nowrap; gap: 4px;
-      overflow-x: auto; overflow-y: hidden; height: 22px;
+      overflow-x: auto; overflow-y: hidden;
       align-items: center;
       font-size: 12px; font-variant-numeric: tabular-nums;
       scrollbar-width: none;
     }
     #move-log::-webkit-scrollbar { display: none; }
-    .log-pair  { display: flex; gap: 2px; align-items: baseline; white-space: nowrap; }
-    .log-num   { color: var(--subtext); font-size: 10px; }
-    .log-w     { color: var(--text); }
-    .log-b     { color: #b58863; }
+    .log-pair { display: flex; gap: 2px; align-items: baseline; white-space: nowrap; }
+    .log-num  { color: var(--subtext); font-size: 10px; }
+    .log-w    { color: var(--text); }
+    .log-b    { color: #b58863; }
 
     /* ── Buttons ── */
     .btn-row {
-      width: 100%; max-width: 390px;
-      display: flex; gap: 8px; flex-shrink: 0;
+      width: 100%; max-width: 390px; flex-shrink: 0;
+      display: flex; gap: 8px;
+      height: 46px;
     }
     button {
-      flex: 1; height: 46px; border: none; border-radius: var(--radius);
+      flex: 1; height: 100%; border: none; border-radius: var(--radius);
       font-size: 13px; font-weight: 700; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: opacity 0.15s, transform 0.1s;
