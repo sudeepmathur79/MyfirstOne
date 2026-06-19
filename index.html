@@ -47,7 +47,7 @@
       width: 100%; max-width: 390px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .app-title { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
+    .app-title { font-size: 18px; font-weight: 700; letter-spacing: -.4px; }
     #train-score { display: none; font-size: 11px; font-weight: 700; color: var(--green); }
     .turn-pill {
       font-size: 12px; font-weight: 600; padding: 4px 10px;
@@ -137,13 +137,14 @@
     /* ── Buttons ── */
     .btn-row {
       width: 100%; max-width: 390px; flex-shrink: 0;
-      display: flex; gap: 8px; height: 46px;
+      display: flex; gap: 6px; height: 46px;
     }
     button {
       flex: 1; height: 100%; border: none; border-radius: var(--r);
-      font-size: 13px; font-weight: 700; cursor: pointer;
+      font-size: 12px; font-weight: 700; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: opacity .15s, transform .1s, background .2s, color .2s;
+      white-space: nowrap; overflow: hidden;
     }
     button:active:not(:disabled) { transform: scale(.95); opacity: .8; }
     button:disabled { opacity: .35; cursor: default; }
@@ -185,8 +186,9 @@
 
 <div class="btn-row">
   <button id="btn-1" onclick="onBtn1()">🎯 Train</button>
-  <button id="btn-2" onclick="onBtn2()">↩ Back</button>
-  <button id="btn-3" onclick="onBtn3()">New Game</button>
+  <button id="btn-2" onclick="onBtn2()">💡 Hint</button>
+  <button id="btn-3" onclick="onBtn3()">↩ Back</button>
+  <button id="btn-4" onclick="onBtn4()">New</button>
 </div>
 
 <script>
@@ -251,7 +253,8 @@ let board;
 let selSq       = null;
 let legalDst    = [];
 let cpuThinking = false;
-let mode        = 'play';   // 'play' | 'train'
+// mode: 'play' | 'train-pick' | 'train'
+let mode        = 'play';
 
 let coachData = {
   moveScores: new Map(),
@@ -262,8 +265,9 @@ let coachData = {
 };
 
 let train = {
+  color:      'w',    // color the user is guessing for
   engineMove: null,
-  waiting:    false,
+  waiting:    false,  // true when waiting for user's guess
   score:      { good: 0, total: 0 }
 };
 
@@ -336,6 +340,7 @@ function analyzeCurrentPosition() {
   }
 }
 
+// Play-mode analysis: only when it's White's turn
 function analyzePosition() {
   if (game.game_over() || game.turn() !== 'w') return;
   analyzeCurrentPosition();
@@ -350,7 +355,7 @@ function classify(cpLoss) {
   return               { label:'❌ Blunder!',    cls:'red',    state:'blunder'    };
 }
 
-// ── Principle tips — never reveal the move ──
+// ── Principles — never reveal the move in play mode ──
 function focusKeyword(cpLoss) {
   if (cpLoss === null || cpLoss === undefined) return '—';
   if (cpLoss > 300) return '🛡 Protect';
@@ -360,17 +365,17 @@ function focusKeyword(cpLoss) {
 }
 
 function principleHint(cpLoss) {
-  if (cpLoss > 300) return 'Before every move, check that each of your pieces is defended.';
-  if (cpLoss > 150) return 'Ask yourself: what can my opponent take for free next move?';
-  if (cpLoss > 60)  return 'Look for a more active square — idle pieces lose games.';
+  if (cpLoss > 300) return 'Check that every piece of yours is defended before moving.';
+  if (cpLoss > 150) return 'Ask: what can my opponent take for free next move?';
+  if (cpLoss > 60)  return 'Find a more active square — idle pieces lose games.';
   return 'Great instinct! Keep trusting your calculation.';
 }
 
-// ── Play-mode feedback (no move revealed) ──
+// Play-mode feedback — no move name revealed
 function coachMessage(cpLoss, inCheck) {
   const tip = cpLoss !== null ? principleHint(cpLoss) : '';
   if (inCheck && cpLoss !== null && cpLoss <= 60)
-    return '⚡ Check! Excellent — you attacked the king!';
+    return '⚡ Check! Excellent — you put the king under attack!';
   if (inCheck)
     return `⚡ Check! Bold, but a stronger strike existed. ${tip}`;
   if (cpLoss <= 20)  return '✅ Best move! The engine agrees — you nailed it.';
@@ -393,6 +398,20 @@ function highlightFrom(sq) {
   legalDst.forEach(m =>
     $(`#board [data-square="${m.to}"]`).addClass(game.get(m.to) ? 'sq-capture' : 'sq-move')
   );
+}
+
+// ── Hint (play mode) ──
+function showHint() {
+  if (mode !== 'play' || cpuThinking || game.game_over() || game.turn() !== 'w') return;
+  if (!coachData.topFrom) {
+    setFeedback('💡 Calculating… tap Hint again in a moment.', 'neutral');
+    return;
+  }
+  clearHL();
+  $(`#board [data-square="${coachData.topFrom}"]`).addClass('sq-hint-from');
+  $(`#board [data-square="${coachData.topTo}"]`).addClass('sq-hint-to');
+  setFeedback(`💡 Hint: try the purple square. Think about why before tapping!`, 'neutral');
+  setTimeout(() => $('#board .square-55d63').removeClass('sq-hint-from sq-hint-to'), 4000);
 }
 
 // ── Play-mode: execute player move ──
@@ -484,6 +503,7 @@ function doCpuMove() {
 $(document).on('click', '#board [data-square]', function (e) {
   e.stopPropagation();
   if (mode === 'train') { handleTrainTap($(this).data('square')); return; }
+  if (mode !== 'play')  return;
 
   if (cpuThinking || game.game_over() || game.turn() !== 'w') return;
   const sq    = $(this).data('square');
@@ -517,7 +537,7 @@ function undoLastMove() {
 
 // ── New Game ──
 function newGame() {
-  if (mode === 'train') stopTraining(true);
+  if (mode !== 'play') stopTraining(true);
   cpuThinking = false;
   clearHL(); selSq = null; legalDst = [];
   game = new Chess();
@@ -525,41 +545,83 @@ function newGame() {
   setPlayCards('—', '—', '', null);
   setFeedback('You play White. Tap a piece, then tap where to move.', 'neutral');
   refreshUI();
+  setPlayButtons();
   setTimeout(analyzePosition, 50);
 }
 
 // ════════════════════════════════════════════════
 //  TRAINING MODE
-//  Engine vs engine game — you guess every move
+//  Engine vs engine game — you guess moves for
+//  your chosen color; engine auto-plays the other.
 // ════════════════════════════════════════════════
 
-function startTraining() {
+function pickTrainColor() {
+  // Show color-picker buttons
+  mode = 'train-pick';
+  setFeedback('Choose which color you want to practice.', 'neutral');
+  const b1 = $('#btn-1'), b2 = $('#btn-2'), b3 = $('#btn-3'), b4 = $('#btn-4');
+  b1.text('⬜ White').css({ background:'#f0d9b5', color:'#1c1c1e' }).prop('disabled', false);
+  b2.text('⬛ Black').css({ background:'#4a4a4a', color:'#fff'    }).prop('disabled', false);
+  b3.text('✕ Cancel').css({ background:'var(--surf2)', color:'var(--sub)' }).prop('disabled', false);
+  b4.text('').prop('disabled', true).css({ background:'var(--surf2)', color:'#0000' });
+}
+
+function startTraining(color) {
   mode = 'train';
-  train.score = { good: 0, total: 0 };
-  cpuThinking = false;
+  train.color  = color;
+  train.score  = { good: 0, total: 0 };
+  cpuThinking  = false;
   clearHL(); selSq = null; legalDst = [];
   game = new Chess();
   board.position('start');
   $('#train-score').show().text('0 / 0');
   $('#c-extra-lbl').text('Engine');
   setPlayCards('—', '—', '', null);
-  setFeedback('🧠 Training: guess the best move for each side!', 'neutral');
+  const colorName = color === 'w' ? 'White ♙' : 'Black ♟';
+  setFeedback(`Training as ${colorName} — engine plays the other side.`, 'neutral');
   setTrainButtons('waiting');
   analyzeCurrentPosition();
-  setTimeout(trainAsk, 80);
+
+  if (game.turn() === train.color) {
+    setTimeout(trainAsk, 80);
+  } else {
+    setTimeout(trainAutoPlay, 400);
+  }
 }
 
+// User's turn to guess
 function trainAsk() {
   if (game.game_over()) { endTrainingGame(); return; }
   train.engineMove = getBestMove();
   train.waiting    = true;
   const col = game.turn() === 'w' ? 'White ♙' : 'Black ♟';
-  setFeedback(`🧠 ${col} to move — what would you play?`, 'neutral');
+  setFeedback(`🧠 ${col} to move — what would YOU play?`, 'neutral');
   const pill = document.getElementById('turn-pill');
   pill.textContent = `Guess: ${game.turn() === 'w' ? 'White' : 'Black'}`;
   pill.className   = 'turn-pill train';
   clearHL(); selSq = null; legalDst = [];
   setTrainButtons('waiting');
+}
+
+// Engine auto-plays its color (no user input)
+function trainAutoPlay() {
+  if (game.game_over()) { endTrainingGame(); return; }
+  const em = getBestMove();
+  if (!em) { endTrainingGame(); return; }
+
+  game.move(em);
+  board.position(game.fen());
+  refreshMoveLog();
+
+  const pill = document.getElementById('turn-pill');
+  pill.textContent = 'Engine…';
+  pill.className   = 'turn-pill cpu';
+  setFeedback(`Engine plays ${em.san}.`, 'cpu');
+
+  if (game.game_over()) { setTimeout(endTrainingGame, 600); return; }
+
+  analyzeCurrentPosition();
+  setTimeout(trainAsk, 800);
 }
 
 function handleTrainTap(sq) {
@@ -592,17 +654,17 @@ function handleTrainGuess(from, to) {
 
   if (cpLoss !== null && cpLoss <= 60) train.score.good++;
 
-  const c = cpLoss !== null ? classify(cpLoss) : { label: '—', cls: '', state: 'neutral' };
+  const c = cpLoss !== null ? classify(cpLoss) : { label:'—', cls:'', state:'neutral' };
 
   let msg, state;
   if (isMatch) {
     msg   = `🎯 Spot on! ${em.san} — exactly what the engine plays!`;
     state = 'best';
   } else if (cpLoss !== null && cpLoss <= 60) {
-    msg   = `✅ Strong choice (${picked.san})! Engine prefers ${em.san} — both are solid.`;
+    msg   = `✅ Strong (${picked.san})! Engine chose ${em.san} — both are solid.`;
     state = 'good';
   } else if (cpLoss !== null && cpLoss <= 150) {
-    msg   = `⚠️ Almost! You played ${picked.san}. Engine chose ${em.san}. ${principleHint(cpLoss)}`;
+    msg   = `⚠️ Almost! ${picked.san} is okay; engine plays ${em.san}. ${principleHint(cpLoss)}`;
     state = 'inaccuracy';
   } else {
     msg   = `❌ You played ${picked.san}. Engine plays ${em.san}. ${principleHint(cpLoss)}`;
@@ -623,6 +685,7 @@ function handleTrainGuess(from, to) {
   setTrainButtons('continue');
 }
 
+// Advance after user has seen the result
 function trainContinue() {
   if (train.waiting) { trainSkip(); return; }
   const em = train.engineMove;
@@ -636,9 +699,16 @@ function trainContinue() {
   if (game.game_over()) { endTrainingGame(); return; }
 
   analyzeCurrentPosition();
-  setTimeout(trainAsk, 80);
+
+  if (game.turn() === train.color) {
+    setTimeout(trainAsk, 80);
+  } else {
+    setTrainButtons('waiting'); // keep locked while engine thinks
+    setTimeout(trainAutoPlay, 400);
+  }
 }
 
+// Skip this position without guessing
 function trainSkip() {
   train.waiting = false;
   const em = train.engineMove;
@@ -656,16 +726,15 @@ function stopTraining(silent) {
   train.waiting = false;
   clearHL(); selSq = null; legalDst = [];
   $('#train-score').hide();
-  setTrainButtons('play');
-  $('#c-extra-lbl').text('Focus');
   game = new Chess();
   board.position('start');
   refreshUI();
   setPlayCards('—', '—', '', null);
+  setPlayButtons();
   if (!silent) {
     setFeedback(
       s.total > 0
-        ? `Training ended — ${s.good}/${s.total} strong moves. Now you play White!`
+        ? `Training ended — ${s.good}/${s.total} strong moves. You play White now!`
         : 'You play White. Tap a piece, then tap where to move.',
       'neutral'
     );
@@ -684,35 +753,55 @@ function endTrainingGame() {
   game = new Chess();
   board.position('start');
   $('#train-score').hide();
-  setTrainButtons('play');
-  $('#c-extra-lbl').text('Focus');
   setPlayCards('—', '—', '', null);
   refreshUI();
+  setPlayButtons();
   setFeedback(`🏁 ${result} Score: ${s.good}/${s.total} strong moves. You play White now!`, 'end');
   setTimeout(analyzePosition, 100);
 }
 
+// ── Button sets ──
+function setPlayButtons() {
+  $('#btn-1').text('🎯 Train').css({ background:'var(--green)',  color:'#1c1c1e' }).prop('disabled', false);
+  $('#btn-2').text('💡 Hint') .css({ background:'var(--purple)', color:'#fff'    }).prop('disabled', false);
+  $('#btn-3').text('↩ Back')  .css({ background:'var(--surf2)',  color:'var(--text)' }).prop('disabled', false);
+  $('#btn-4').text('New')     .css({ background:'var(--accent)', color:'#fff'    }).prop('disabled', false);
+}
+
 function setTrainButtons(state) {
-  const b1 = $('#btn-1'), b2 = $('#btn-2'), b3 = $('#btn-3');
-  if (state === 'play') {
-    b1.text('🎯 Train').css({ background:'var(--green)',  color:'#1c1c1e' }).prop('disabled', false);
-    b2.text('↩ Back')  .css({ background:'var(--surf2)',  color:'var(--text)' }).prop('disabled', false);
-    b3.text('New Game') .css({ background:'var(--accent)', color:'#fff' }).prop('disabled', false);
-  } else if (state === 'waiting') {
-    b1.text('▶ Continue').css({ background:'var(--surf2)',  color:'var(--sub)' }).prop('disabled', true);
-    b2.text('⏭ Skip')   .css({ background:'var(--surf2)',  color:'var(--text)' }).prop('disabled', false);
-    b3.text('✕ End')    .css({ background:'var(--red)',    color:'#fff' }).prop('disabled', false);
+  const b1=$('#btn-1'), b2=$('#btn-2'), b3=$('#btn-3'), b4=$('#btn-4');
+  b4.text('').prop('disabled', true).css({ background:'var(--surf2)', color:'#0000' });
+  if (state === 'waiting') {
+    b1.text('▶ Continue').css({ background:'var(--surf2)', color:'var(--sub)' }).prop('disabled', true);
+    b2.text('⏭ Skip')   .css({ background:'var(--surf2)', color:'var(--text)' }).prop('disabled', false);
+    b3.text('✕ End')    .css({ background:'var(--red)',   color:'#fff' }).prop('disabled', false);
   } else {
     b1.text('▶ Continue').css({ background:'var(--accent)', color:'#fff' }).prop('disabled', false);
-    b2.text('⏭ Skip')   .css({ background:'var(--surf2)',  color:'var(--text)' }).prop('disabled', false);
-    b3.text('✕ End')    .css({ background:'var(--red)',    color:'#fff' }).prop('disabled', false);
+    b2.text('⏭ Skip')   .css({ background:'var(--surf2)', color:'var(--text)' }).prop('disabled', false);
+    b3.text('✕ End')    .css({ background:'var(--red)',   color:'#fff' }).prop('disabled', false);
   }
 }
 
 // ── Button routing ──
-function onBtn1() { mode === 'play' ? startTraining() : trainContinue(); }
-function onBtn2() { mode === 'play' ? undoLastMove()   : trainSkip();    }
-function onBtn3() { mode === 'play' ? newGame()         : stopTraining(); }
+function onBtn1() {
+  if      (mode === 'play')       pickTrainColor();
+  else if (mode === 'train-pick') startTraining('w');  // "As White" button
+  else if (mode === 'train')      trainContinue();
+}
+function onBtn2() {
+  if      (mode === 'play')       showHint();
+  else if (mode === 'train-pick') startTraining('b');  // "As Black" button
+  else if (mode === 'train')      trainSkip();
+}
+function onBtn3() {
+  if      (mode === 'play')       undoLastMove();
+  else if (mode === 'train-pick') { mode = 'play'; setPlayButtons(); setFeedback('You play White. Tap a piece, then tap where to move.', 'neutral'); }
+  else if (mode === 'train')      stopTraining();
+}
+function onBtn4() {
+  if (mode === 'play') newGame();
+  // btn-4 is hidden in train and train-pick modes
+}
 
 // ── UI helpers ──
 function setFeedback(msg, state) {
@@ -740,11 +829,11 @@ function refreshMoveLog() {
 }
 
 function refreshUI() {
-  if (mode !== 'train') {
+  if (mode === 'play') {
     const pill = document.getElementById('turn-pill');
-    if (game.game_over())                         { pill.textContent = 'Game Over'; pill.className = 'turn-pill'; }
-    else if (cpuThinking || game.turn() === 'b')  { pill.textContent = 'CPU…';      pill.className = 'turn-pill cpu'; }
-    else                                          { pill.textContent = 'Your turn'; pill.className = 'turn-pill white'; }
+    if (game.game_over())                        { pill.textContent = 'Game Over'; pill.className = 'turn-pill'; }
+    else if (cpuThinking || game.turn() === 'b') { pill.textContent = 'CPU…';      pill.className = 'turn-pill cpu'; }
+    else                                         { pill.textContent = 'Your turn'; pill.className = 'turn-pill white'; }
   }
   refreshMoveLog();
 }
@@ -785,7 +874,7 @@ $(document).ready(function () {
   });
 
   setBoardSize();
-  setTrainButtons('play');
+  setPlayButtons();
   $(window).on('resize', setBoardSize);
   setTimeout(analyzePosition, 100);
 });
