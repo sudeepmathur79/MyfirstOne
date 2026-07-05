@@ -5,6 +5,15 @@
 <title>Akanishtha Fund</title>
 <meta name="description" content="Akanishtha Fund — we build ventures with no ceiling on their potential.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://akanishtha.fund/">
+<meta property="og:title" content="Akanishtha Fund">
+<meta property="og:description" content="Akanishtha Fund — we build ventures with no ceiling on their potential.">
+<meta property="og:image" content="https://akanishtha.fund/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Akanishtha Fund">
+<meta name="twitter:description" content="Akanishtha Fund — we build ventures with no ceiling on their potential.">
+<meta name="twitter:image" content="https://akanishtha.fund/assets/og-image.png">
 
 <script src="assets/2be35ff5.js"></script>
 </head>
@@ -461,18 +470,32 @@
         Are you building something<br>that belongs at the highest level?
       </p>
 
-      <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
-        <form onsubmit="{{ onSubmit }}" data-reveal="" style="display:flex; align-items:flex-end; gap:16px; width:100%; max-width:420px; opacity:0; animation: fadeIn 1s ease forwards; animation-play-state:paused; animation-delay:0.6s;">
-          <input type="email" required="true" placeholder="your email" value="{{ email }}" onchange="{{ onEmailChange }}" style="flex:1; background:transparent; border:none; border-bottom:1px solid #C9A84C; outline:none; padding:10px 2px; font-family:'Inter', sans-serif; font-weight:300; font-size:16px; color:#FAFAF8;" style-focus="border-bottom:1px solid #FAFAF8;">
-          <button type="submit" aria-label="Submit" style="background:none; border:none; cursor:pointer; color:#C9A84C; font-size:22px; padding:6px 2px; font-family:'Cormorant Garamond', serif;" style-hover="color:#FAFAF8;">→</button>
-        </form>
-      </sc-if>
+      <div aria-live="polite">
+        <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
+          <form onsubmit="{{ onSubmit }}" data-reveal="" style="display:flex; align-items:flex-end; gap:16px; width:100%; max-width:420px; opacity:0; animation: fadeIn 1s ease forwards; animation-play-state:paused; animation-delay:0.6s;">
+            <input type="email" required="true" aria-label="Email address" placeholder="your email" value="{{ email }}" onchange="{{ onEmailChange }}" style="flex:1; background:transparent; border:none; border-bottom:1px solid #C9A84C; outline:none; padding:10px 2px; font-family:'Inter', sans-serif; font-weight:300; font-size:16px; color:#FAFAF8;" style-focus="border-bottom:1px solid #FAFAF8;">
+            <button type="submit" aria-label="Submit" style="background:none; border:none; cursor:pointer; color:#C9A84C; font-size:22px; padding:6px 2px; font-family:'Cormorant Garamond', serif;" style-hover="color:#FAFAF8;">→</button>
+          </form>
+        </sc-if>
 
-      <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'Cormorant Garamond', serif; font-weight:300; font-style:italic; font-size:clamp(20px, 2.6vw, 28px); color:#C9A84C; opacity:0; animation: fadeIn 1.4s ease forwards;">
-          We will find you.
-        </div>
+        <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'Cormorant Garamond', serif; font-weight:300; font-style:italic; font-size:clamp(20px, 2.6vw, 28px); color:#C9A84C; opacity:0; animation: fadeIn 1.4s ease forwards;">
+            We will find you.
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
+        <p style="font-family:'Inter', sans-serif; font-weight:300; font-size:12px; line-height:1.6; color:rgba(250,250,248,0.34); max-width:420px; margin:14px 0 0;">
+          By signing up, you agree to be contacted about Akanishtha Fund. See our <a href="privacy.html" style="color:rgba(201,168,76,0.7); text-decoration:none;" style-hover="color:#C9A84C;">Privacy Policy</a>.
+        </p>
       </sc-if>
+    </div>
+
+    <div style="position:absolute; left:24px; right:64px; bottom:0; height:44px; display:flex; align-items:center; justify-content:center; gap:10px; font-family:'Inter', sans-serif; font-size:11px; color:rgba(250,250,248,0.34);">
+      <span>&copy; 2026 Akanishtha Fund</span>
+      <span style="opacity:0.6;">&middot;</span>
+      <a href="privacy.html" style="color:rgba(250,250,248,0.34); text-decoration:none;" style-hover="color:#C9A84C;">Privacy Policy</a>
     </div>
 
     <button onclick="{{ toggleSound }}" aria-label="Toggle ambient tone" style="position:absolute; bottom:28px; right:28px; width:8px; height:8px; border-radius:50%; border:none; padding:0; cursor:pointer; background:{{ soundDotColor }}; opacity:0.5;" style-hover="opacity:0.9;"></button>
@@ -480,10 +503,27 @@
 
 </div>
 
+<sc-if value="{{ cookieBannerVisible }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; left:0; right:0; bottom:0; z-index:50; background:#000000; border-top:1px solid rgba(201,168,76,0.22); padding:18px 24px; display:flex; align-items:center; justify-content:center; gap:28px; flex-wrap:wrap;">
+    <p style="font-family:'Inter', sans-serif; font-weight:300; font-size:12.5px; line-height:1.6; color:rgba(250,250,248,0.58); max-width:480px; margin:0;">
+      This site uses only the minimum necessary to run &mdash; no ad trackers, no analytics. By continuing, you agree to our <a href="privacy.html" style="color:rgba(201,168,76,0.7); text-decoration:none;" style-hover="color:#C9A84C;">Privacy Policy</a>.
+    </p>
+    <button onclick="{{ onAcceptCookies }}" type="button" style="flex-shrink:0; background:none; border:1px solid rgba(201,168,76,0.55); color:#C9A84C; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 22px; cursor:pointer;" style-hover="background:#C9A84C; color:#000000;">Accept</button>
+  </div>
+</sc-if>
+
 </x-dc>
 <script type="text/x-dc" data-dc-script="">
 class Component extends DCLogic {
-  state = { email: '', submitted: false, soundOn: false };
+  state = {
+    email: '',
+    submitted: false,
+    soundOn: false,
+    cookieBannerVisible: (() => {
+      try { return !window.localStorage.getItem('akanishtha_cookie_consent'); }
+      catch (e) { return true; }
+    })()
+  };
 
   beat2Ref = React.createRef();
   beat3Ref = React.createRef();
@@ -521,6 +561,11 @@ class Component extends DCLogic {
 
   handleEmailChange = (e) => {
     this.setState({ email: e.target.value });
+  };
+
+  handleAcceptCookies = () => {
+    try { window.localStorage.setItem('akanishtha_cookie_consent', '1'); } catch (e) {}
+    this.setState({ cookieBannerVisible: false });
   };
 
   handleSubmit = (e) => {
@@ -578,6 +623,8 @@ class Component extends DCLogic {
       notSubmitted: !this.state.submitted,
       soundOn: this.state.soundOn,
       soundDotColor: this.state.soundOn ? '#C9A84C' : 'rgba(201,168,76,0.5)',
+      cookieBannerVisible: this.state.cookieBannerVisible,
+      onAcceptCookies: this.handleAcceptCookies,
       onEmailChange: this.handleEmailChange,
       onSubmit: this.handleSubmit,
       toggleSound: this.toggleSound,
